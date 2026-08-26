@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 os.environ["FLAGS_enable_pir_api"] = "0"
 os.environ.setdefault("PADDLE_PDX_MODEL_SOURCE", "BOS")
+os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
 
 import gc
 import json
@@ -49,7 +50,7 @@ ENGINE_CONFIG = {
 PRIMARY_ENGINES = ["korean", "latin"]
 FALLBACK_ENGINES = ["arabic", "cyrillic", "devanagari", "japanese", "chinese", "thai", "greek", "tamil", "telugu"]
 
-app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.1")
+app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,6 +71,7 @@ def make_engine(engine_key: str) -> PaddleOCR:
     return PaddleOCR(
         lang=cfg["lang"],
         ocr_version="PP-OCRv5",
+        text_detection_model_name="PP-OCRv5_mobile_det",
         device="cpu",
         enable_mkldnn=False,
         use_doc_orientation_classify=False,
@@ -668,9 +670,9 @@ def home():
 def health():
     return {
         "ok": True,
-        "engine": "PaddleOCR PP-OCRv5 multilingual router",
+        "engine": "PaddleOCR PP-OCRv5 mobile-det multilingual router",
         "mode": "local-or-cloud",
-        "version": "0.9.1",
+        "version": "0.9.2",
         "language_selection_required": False,
         "primary_ocr_families": PRIMARY_ENGINES,
         "fallback_ocr_families": FALLBACK_ENGINES,
