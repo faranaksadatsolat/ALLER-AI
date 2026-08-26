@@ -1,10 +1,7 @@
 import re
 import unicodedata
-from dataclasses import dataclass
 from typing import Iterable
 
-# High-confidence aliases/derivatives only.
-# This is deliberately conservative: unknown terms do NOT get guessed as safe.
 ALLERGENS = {
     "milk": {
         "label": "Milk",
@@ -47,7 +44,7 @@ ALLERGENS = {
     "wheat": {
         "label": "Wheat",
         "direct": {"wheat","밀","소맥","گندم","قمح","小麦","小麥","blé","weizen","trigo"},
-        "derived": {"wheat flour","flour (wheat)","밀가루","소맥분","wheat gluten","밀글루텐"}
+        "derived": {"wheat flour","flour wheat","밀가루","소맥분","wheat gluten","밀글루텐"}
     },
     "sesame": {
         "label": "Sesame",
@@ -85,13 +82,12 @@ def normalize(s: str) -> str:
 def term_present(text: str, term: str) -> bool:
     return normalize(term) in normalize(text)
 
-def is_precautionary_context(text: str, term: str) -> bool:
-    t = normalize(text)
-    q = normalize(term)
+def precautionary_context(text: str, term: str) -> bool:
+    t, q = normalize(text), normalize(term)
     pos = t.find(q)
     while pos >= 0:
-        ctx = t[max(0, pos - 120): pos + len(q) + 25]
-        if any(normalize(p) in ctx for p in MAY_CONTAIN):
+        ctx = t[max(0, pos - 120):pos + len(q) + 25]
+        if any(normalize(x) in ctx for x in MAY_CONTAIN):
             return True
         pos = t.find(q, pos + 1)
     return False
@@ -105,55 +101,46 @@ def _dedupe(items):
             out.append(x)
     return out
 
-def evaluate_label(text: str, selected_allergens: Iterable[str], custom_avoid: Iterable[str] = (),
-                   model_evidence: list[dict] | None = None):
-    """
-    Conservative deterministic verifier.
-    Model evidence is only accepted when quoted_label_term literally exists in source text.
-    """
-    direct, caution = [], []
+def evaluate_label(text: str, selected_allergens: Iterable[str], custom_avoid=(), model_evidence=None):
     selected = set(selected_allergens or [])
+    direct, caution = [], []
 
-    for allergen_id in selected:
-        spec = ALLERGENS.get(allergen_id)
+    for aid in selected:
+        spec = ALLERGENS.get(aid)
         if not spec:
             continue
-        for term in spec["direct"]:
-            if term_present(text, term):
-                item = {"allergen": spec["label"], "matched_term": term, "relationship": "direct"}
-                (caution if is_precautionary_context(text, term) else direct).append(item)
-        for term in spec["derived"]:
-            if term_present(text, term):
-                item = {"allergen": spec["label"], "matched_term": term, "relationship": "derived"}
-                (caution if is_precautionary_context(text, term) else direct).append(item)
+        for rel, terms in [("direct", spec["direct"]), ("derived", spec["derived"])]:
+            for term in terms:
+                if term_present(text, term):
+                    hit = {"allergen": spec["label"], "matched_term": term, "relationship": rel}
+                    (caution if precautionary_context(text, term) else direct).append(hit)
 
     for term in custom_avoid or []:
         if term and term_present(text, term):
-            item = {"allergen": "Custom avoid", "matched_term": term, "relationship": "direct"}
-            (caution if is_precautionary_context(text, term) else direct).append(item)
+            hit = {"allergen": "Custom avoid", "matched_term": term, "relationship": "direct"}
+            (caution if precautionary_context(text, term) else direct).append(hit)
 
-    # Vision-model candidate mappings: use ONLY if its quoted evidence is really in the source text
-    # and it maps to an allergen the user selected.
+    # Model-derived semantic candidates are allowed only when the model quotes
+    # a literal term that is actually present in the extracted source text.
     for ev in model_evidence or []:
-        allergen = (ev.get("allergen_group") or "").strip().lower().replace(" ", "_")
+        aid = (ev.get("allergen_group") or "").strip().lower().replace(" ", "_")
         quote = (ev.get("quoted_label_term") or "").strip()
         rel = ev.get("relationship") or "none"
-        if allergen not in selected or not quote or not term_present(text, quote):
+        if aid not in selected or not quote or not term_present(text, quote):
             continue
-        label = ALLERGENS.get(allergen, {}).get("label", allergen.replace("_"," ").title())
-        item = {
+        label = ALLERGENS.get(aid, {}).get("label", aid.replace("_"," ").title())
+        hit = {
             "allergen": label,
             "matched_term": quote,
             "relationship": rel,
             "reason": ev.get("reason","")
         }
-        if rel == "possible_cross_contact" or is_precautionary_context(text, quote):
-            caution.append(item)
+        if rel == "possible_cross_contact" or precautionary_context(text, quote):
+            caution.append(hit)
         elif rel in ("direct","derived"):
-            direct.append(item)
+            direct.append(hit)
 
     direct, caution = _dedupe(direct), _dedupe(caution)
-
     if direct:
         return "conflict", direct, caution
     if caution:
