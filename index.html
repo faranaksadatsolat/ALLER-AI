@@ -1,1065 +1,276 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1220" />
-  <meta name="color-scheme" content="light" />
-  <title>ALLER AI — Understand the label before you eat</title>
-  <meta name="description" content="A multilingual packaged-food assistant that checks ingredient labels against your allergy profile." />
-
-  <style>
-    :root{
-      --ink:#0b1220;
-      --ink-2:#172033;
-      --muted:#667085;
-      --muted-2:#98a2b3;
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --line:#e7eaf0;
-      --brand:#4169e1;
-      --brand-soft:#eef2ff;
-      --brand-ink:#243b8a;
-      --danger:#b42318;
-      --danger-bg:#fff2f0;
-      --warn:#a15c00;
-      --warn-bg:#fff8e8;
-      --ok:#146c43;
-      --ok-bg:#edf9f2;
-      --shadow:0 16px 50px rgba(16,24,40,.08);
-      --radius-xl:28px;
-      --radius-lg:20px;
-      --radius-md:14px;
-      --max:760px;
-    }
-
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0;
-      min-height:100vh;
-      background:
-        radial-gradient(circle at 12% -10%, rgba(65,105,225,.12), transparent 33%),
-        linear-gradient(180deg,#fbfcff 0,#f7f8fb 40%,#f7f8fb 100%);
-      color:var(--ink);
-      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                  "Noto Sans KR", "Noto Sans Arabic", Arial, sans-serif;
-      -webkit-font-smoothing:antialiased;
-    }
-
-    button,input,select{font:inherit}
-    button{-webkit-tap-highlight-color:transparent}
-
-    .app{
-      width:min(var(--max), calc(100% - 28px));
-      margin:0 auto;
-      padding:22px 0 calc(44px + env(safe-area-inset-bottom));
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:20px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .mark{
-      width:48px;height:48px;
-      display:grid;place-items:center;
-      border-radius:16px;
-      background:var(--ink);
-      color:#fff;
-      font-weight:850;
-      letter-spacing:-.05em;
-      box-shadow:0 8px 20px rgba(11,18,32,.14);
-      flex:0 0 auto;
-    }
-
-    .brand-copy{min-width:0}
-    .brand-name{
-      font-size:21px;
-      line-height:1.05;
-      font-weight:850;
-      letter-spacing:-.03em;
-    }
-    .brand-tag{
-      margin-top:4px;
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .lang{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.88);
-      border-radius:12px;
-      padding:8px 10px;
-      color:var(--ink-2);
-      outline:none;
-    }
-
-    .hero{
-      padding:26px 6px 22px;
-    }
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      color:var(--brand-ink);
-      background:var(--brand-soft);
-      border-radius:999px;
-      padding:7px 10px;
-      font-size:12px;
-      font-weight:750;
-      margin-bottom:13px;
-    }
-    .hero h1{
-      margin:0;
-      font-size:clamp(32px,8vw,52px);
-      line-height:1.04;
-      letter-spacing:-.045em;
-      max-width:650px;
-    }
-    .hero p{
-      color:var(--muted);
-      margin:13px 0 0;
-      line-height:1.65;
-      font-size:15px;
-      max-width:630px;
-    }
-
-    .stack{display:grid;gap:16px}
-
-    .card{
-      background:rgba(255,255,255,.94);
-      border:1px solid rgba(231,234,240,.95);
-      border-radius:var(--radius-xl);
-      padding:22px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-    }
-
-    .section-head{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:18px;
-    }
-    .num{
-      width:32px;height:32px;
-      border-radius:11px;
-      display:grid;place-items:center;
-      background:var(--brand-soft);
-      color:var(--brand-ink);
-      font-weight:850;
-      flex:0 0 auto;
-    }
-    .section-head h2{
-      margin:1px 0 3px;
-      font-size:19px;
-      letter-spacing:-.02em;
-    }
-    .section-head p{
-      margin:0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-    }
-
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:9px;
-    }
-    .chip{
-      position:relative;
-    }
-    .chip input{
-      position:absolute;
-      opacity:0;
-      pointer-events:none;
-    }
-    .chip span{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      min-height:42px;
-      padding:9px 13px;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:999px;
-      color:#344054;
-      font-size:14px;
-      font-weight:650;
-      cursor:pointer;
-      transition:.16s ease;
-      user-select:none;
-    }
-    .chip span::before{
-      content:"";
-      width:16px;height:16px;
-      border:1.5px solid #cbd2dc;
-      border-radius:50%;
-      transition:.16s ease;
-    }
-    .chip input:checked + span{
-      border-color:#9db1ff;
-      background:var(--brand-soft);
-      color:var(--brand-ink);
-    }
-    .chip input:checked + span::before{
-      border:5px solid var(--brand);
-      background:#fff;
-    }
-
-    .custom-row{
-      display:flex;
-      gap:9px;
-      margin-top:13px;
-    }
-    .text-input{
-      flex:1;
-      min-width:0;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--ink);
-      border-radius:14px;
-      padding:12px 13px;
-      outline:none;
-    }
-    .text-input:focus{border-color:#9db1ff;box-shadow:0 0 0 3px rgba(65,105,225,.10)}
-
-    .btn{
-      border:0;
-      border-radius:14px;
-      min-height:46px;
-      padding:11px 15px;
-      font-weight:800;
-      cursor:pointer;
-      transition:transform .08s ease, opacity .15s ease, background .15s ease;
-    }
-    .btn:active{transform:translateY(1px)}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
-    .btn-primary{background:var(--ink);color:#fff}
-    .btn-soft{background:#f0f2f6;color:var(--ink)}
-    .btn-brand{background:var(--brand);color:#fff}
-    .btn-wide{width:100%;min-height:54px;font-size:16px;border-radius:17px}
-
-    .capture{
-      border:1.5px dashed #cfd6e2;
-      border-radius:22px;
-      background:linear-gradient(180deg,#fcfdff,#f8f9fc);
-      min-height:240px;
-      display:grid;
-      place-items:center;
-      text-align:center;
-      padding:24px;
-      overflow:hidden;
-    }
-    .capture-inner{max-width:430px}
-    .camera-icon{
-      width:62px;height:62px;
-      border-radius:20px;
-      display:grid;place-items:center;
-      margin:0 auto 13px;
-      background:var(--brand-soft);
-      color:var(--brand-ink);
-    }
-    .capture h3{
-      margin:0;
-      font-size:19px;
-      letter-spacing:-.02em;
-    }
-    .capture p{
-      margin:7px 0 15px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    .photo-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-top:12px;
-    }
-    @media(max-width:540px){.photo-grid{grid-template-columns:1fr 1fr}}
-    .photo-card{
-      position:relative;
-      aspect-ratio:4/3;
-      overflow:hidden;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#f2f4f7;
-    }
-    .photo-card img{
-      width:100%;height:100%;object-fit:cover;display:block;
-    }
-    .photo-card .remove{
-      position:absolute;
-      top:7px;right:7px;
-      width:30px;height:30px;
-      border:0;border-radius:50%;
-      background:rgba(11,18,32,.82);
-      color:#fff;
-      cursor:pointer;
-      font-size:18px;
-      line-height:1;
-    }
-    .photo-card .qbadge{
-      position:absolute;
-      left:7px;bottom:7px;
-      max-width:calc(100% - 14px);
-      background:rgba(255,255,255,.92);
-      color:#344054;
-      border-radius:999px;
-      padding:5px 8px;
-      font-size:10px;
-      font-weight:750;
-      box-shadow:0 2px 9px rgba(16,24,40,.12);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .qbadge.bad{color:var(--danger)}
-    .qbadge.good{color:var(--ok)}
-
-    .tips{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:8px;
-      margin-top:13px;
-    }
-    @media(max-width:540px){.tips{grid-template-columns:1fr}}
-    .tip{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:13px;
-      padding:10px 11px;
-      color:#475467;
-      font-size:12px;
-      line-height:1.45;
-    }
-
-    .action-area{
-      margin-top:16px;
-    }
-    .action-note{
-      text-align:center;
-      color:var(--muted);
-      font-size:11px;
-      margin-top:8px;
-      line-height:1.5;
-    }
-
-    .analysis{
-      display:none;
-      text-align:center;
-      padding:28px 14px 6px;
-    }
-    .analysis.show{display:block}
-    .spinner{
-      width:42px;height:42px;
-      margin:0 auto 13px;
-      border-radius:50%;
-      border:4px solid #e8ecf7;
-      border-top-color:var(--brand);
-      animation:spin .8s linear infinite;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .analysis strong{display:block;font-size:17px}
-    .analysis span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
-
-    .result{
-      display:none;
-      border-radius:22px;
-      padding:19px;
-      margin-top:16px;
-      border:1px solid;
-    }
-    .result.show{display:block}
-    .result.danger{background:var(--danger-bg);border-color:#f7c9c4;color:var(--danger)}
-    .result.warn{background:var(--warn-bg);border-color:#f3d69a;color:var(--warn)}
-    .result.ok{background:var(--ok-bg);border-color:#bfe6ce;color:var(--ok)}
-    .result.neutral{background:#f8fafc;border-color:#dbe1ea;color:#344054}
-
-    .result-top{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-    .result-icon{
-      width:42px;height:42px;
-      border-radius:14px;
-      display:grid;place-items:center;
-      background:rgba(255,255,255,.75);
-      flex:0 0 auto;
-      font-weight:900;
-    }
-    .result h3{
-      margin:1px 0 4px;
-      font-size:19px;
-      letter-spacing:-.02em;
-    }
-    .result p{
-      margin:0;
-      font-size:13px;
-      line-height:1.55;
-    }
-    .evidence{
-      margin-top:14px;
-      border-top:1px solid rgba(0,0,0,.08);
-      padding-top:12px;
-      display:grid;
-      gap:8px;
-    }
-    .evidence-row{
-      display:flex;
-      justify-content:space-between;
-      gap:18px;
-      font-size:12px;
-    }
-    .evidence-row span:first-child{opacity:.75}
-    .evidence-row strong{text-align:right}
-
-    .privacy{
-      display:flex;
-      align-items:flex-start;
-      gap:9px;
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.55;
-      margin-top:14px;
-    }
-
-    .footer{
-      padding:22px 5px 0;
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.65;
-      text-align:center;
-    }
-
-    .hidden{display:none!important}
-
-    /* RTL support for Persian */
-    html[dir="rtl"] .brand,
-    html[dir="rtl"] .section-head,
-    html[dir="rtl"] .result-top,
-    html[dir="rtl"] .privacy{flex-direction:row-reverse}
-    html[dir="rtl"] .section-head,
-    html[dir="rtl"] .result-top,
-    html[dir="rtl"] .privacy{text-align:right}
-    html[dir="rtl"] .hero{text-align:right}
-    html[dir="rtl"] .evidence-row strong{text-align:left}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<!-- ALLER AI UI v0.8.1: localized Korean results -->
+<title>ALLER AI — Multi-product ingredient checker</title>
+<style>
+:root{--ink:#0b1220;--muted:#667085;--bg:#f7f8fb;--card:#fff;--line:#e7eaf0;--brand:#4169e1;--brand-soft:#eef2ff;--danger:#b42318;--danger-bg:#fff2f0;--warn:#995400;--warn-bg:#fff8e8;--ok:#146c43;--ok-bg:#edf9f2;--shadow:0 16px 50px rgba(16,24,40,.08);--r:26px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% -10%,rgba(65,105,225,.12),transparent 32%),var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif}button,input,select{font:inherit}
+.app{width:min(820px,calc(100% - 28px));margin:auto;padding:22px 0 48px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px}.mark{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--ink);color:white;font-weight:900}.name{font-size:21px;font-weight:900}.tag{color:var(--muted);font-size:12px;margin-top:3px}select{border:1px solid var(--line);background:white;border-radius:12px;padding:8px 10px}
+.hero{padding:22px 5px}.hero h1{font-size:clamp(32px,8vw,52px);line-height:1.04;letter-spacing:-.045em;margin:0}.hero p{color:var(--muted);line-height:1.65;margin:13px 0 0}.stack{display:grid;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.head{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px}.num{width:32px;height:32px;border-radius:11px;background:var(--brand-soft);display:grid;place-items:center;color:#243b8a;font-weight:900;flex:0 0 auto}.head h2{font-size:19px;margin:1px 0 3px}.head p{font-size:13px;color:var(--muted);margin:0;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:9px}.chip{position:relative}.chip input{position:absolute;opacity:0}.chip span{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;min-height:42px;border:1px solid var(--line);border-radius:999px;font-size:14px;font-weight:650;cursor:pointer}.chip span:before{content:"";width:16px;height:16px;border-radius:50%;border:1.5px solid #cbd2dc}.chip input:checked+span{background:var(--brand-soft);border-color:#9db1ff;color:#243b8a}.chip input:checked+span:before{border:5px solid var(--brand);background:white}
+.custom{display:flex;gap:8px;margin-top:13px}.custom input{flex:1;min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px}.btn{border:0;border-radius:14px;padding:11px 15px;font-weight:850;cursor:pointer}.primary{background:var(--ink);color:white}.soft{background:#f0f2f6;color:var(--ink)}.outline{background:white;border:1px solid var(--line);color:var(--ink)}.brandbtn{background:var(--brand);color:white;width:100%;min-height:54px;font-size:16px;border-radius:17px}.btn:disabled{opacity:.45;cursor:not-allowed}
+.product{border:1px solid var(--line);border-radius:20px;padding:15px;margin-top:12px;background:#fcfdff}.ptop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.ptitle{font-weight:900}.psub{font-size:11px;color:var(--muted);margin-top:2px}.removeProduct{border:0;background:#f2f4f7;border-radius:10px;padding:7px 9px;cursor:pointer;color:#475467}
+.capture{border:1.5px dashed #cfd6e2;border-radius:18px;background:#fbfcff;text-align:center;padding:18px}.capture p{color:var(--muted);font-size:12px;line-height:1.5;margin:7px 0 12px}.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}@media(max-width:540px){.photos{grid-template-columns:1fr 1fr}}.photo{position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#f2f4f7}.photo img{width:100%;height:100%;object-fit:cover}.x{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(11,18,32,.84);color:white;font-size:17px;cursor:pointer}.added{position:absolute;left:6px;bottom:6px;background:rgba(255,255,255,.94);border-radius:999px;padding:4px 7px;font-size:10px;font-weight:800;color:var(--ok)}
+.addProduct{width:100%;margin-top:12px}.tips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}@media(max-width:540px){.tips{grid-template-columns:1fr}}.tip{border:1px solid var(--line);border-radius:13px;padding:10px 11px;color:#475467;font-size:12px;line-height:1.45}.action{margin-top:16px}.note{text-align:center;color:var(--muted);font-size:11px;line-height:1.5;margin-top:8px}
+.loading{display:none;text-align:center;padding:24px 10px 5px}.loading.show{display:block}.spinner{width:42px;height:42px;border-radius:50%;border:4px solid #e8ecf7;border-top-color:var(--brand);animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.loading strong{display:block}.loading span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.result{display:none;margin-top:16px;border:1px solid #dbe1ea;border-radius:22px;padding:19px;background:#f8fafc}.result.show{display:block}.summaryHead{display:flex;gap:12px;align-items:flex-start}.ricon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:white;font-weight:900;flex:0 0 auto}.result h3{font-size:19px;margin:1px 0 4px}.result p{font-size:13px;line-height:1.55;margin:0}.calTotal{margin-top:14px;border-radius:16px;padding:13px 14px;background:white;border:1px solid var(--line)}.calTotal strong{font-size:21px;display:block}.calTotal span{font-size:11px;color:var(--muted)}
+.productResults{display:grid;gap:10px;margin-top:14px}.presult{border:1px solid var(--line);border-radius:17px;padding:14px;background:white}.presult.danger{border-color:#f7c9c4;background:var(--danger-bg)}.presult.warn{border-color:#f3d69a;background:var(--warn-bg)}.presult.ok{border-color:#bfe6ce;background:var(--ok-bg)}.prtop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.prtitle{font-weight:900}.badge{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.78)}.prmsg{font-size:12px;line-height:1.5;margin-top:7px}.evidence{border-top:1px solid rgba(0,0,0,.08);padding-top:9px;margin-top:10px;display:grid;gap:6px}.ev{display:flex;justify-content:space-between;gap:20px;font-size:11px}.ev span{opacity:.72}.ev strong{text-align:right}.kcal{margin-top:10px;font-size:12px;font-weight:850}.kcal small{display:block;font-weight:500;color:var(--muted);margin-top:3px}
+.privacy,.footer{color:var(--muted);font-size:11px;line-height:1.6}.privacy{margin-top:14px}.footer{text-align:center;padding:20px 5px 0}html[dir="rtl"] .brand,html[dir="rtl"] .head,html[dir="rtl"] .summaryHead{flex-direction:row-reverse;text-align:right}html[dir="rtl"] .hero{text-align:right}
+</style>
 </head>
-
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="mark">알러</div>
-        <div class="brand-copy">
-          <div class="brand-name">ALLER AI</div>
-          <div class="brand-tag" data-i18n="tagline">Understand the label before you eat.</div>
-        </div>
-      </div>
-
-      <select id="uiLang" class="lang" aria-label="Language">
-        <option value="en">EN</option>
-        <option value="ko">한국어</option>
-        <option value="fa">فارسی</option>
-      </select>
-    </header>
-
-    <section class="hero">
-      <div class="eyebrow" data-i18n="eyebrow">For packaged food labels</div>
-      <h1 data-i18n="heroTitle">Check ingredients against what matters to you.</h1>
-      <p data-i18n="heroBody">
-        Take a clear photo of the ingredient label. ALLER AI checks multilingual ingredient terms and known derivatives against your selected profile.
-      </p>
-    </section>
-
-    <div class="stack">
-      <section class="card">
-        <div class="section-head">
-          <div class="num">1</div>
-          <div>
-            <h2 data-i18n="profileTitle">What should we watch for?</h2>
-            <p data-i18n="profileBody">Choose one or more allergens or ingredients you avoid.</p>
-          </div>
-        </div>
-
-        <div class="chips" id="chips">
-          <label class="chip"><input type="checkbox" value="milk"><span data-i18n="milk">Milk</span></label>
-          <label class="chip"><input type="checkbox" value="egg"><span data-i18n="egg">Egg</span></label>
-          <label class="chip"><input type="checkbox" value="peanut"><span data-i18n="peanut">Peanut</span></label>
-          <label class="chip"><input type="checkbox" value="tree_nuts"><span data-i18n="treeNuts">Tree nuts</span></label>
-          <label class="chip"><input type="checkbox" value="soy"><span data-i18n="soy">Soy</span></label>
-          <label class="chip"><input type="checkbox" value="wheat"><span data-i18n="wheat">Wheat</span></label>
-          <label class="chip"><input type="checkbox" value="sesame"><span data-i18n="sesame">Sesame</span></label>
-          <label class="chip"><input type="checkbox" value="fish"><span data-i18n="fish">Fish</span></label>
-          <label class="chip"><input type="checkbox" value="shellfish"><span data-i18n="shellfish">Shellfish</span></label>
-        </div>
-
-        <div class="custom-row">
-          <input id="customAvoid" class="text-input" type="text" data-i18n-placeholder="customPlaceholder" placeholder="Other ingredient, e.g. gelatin" />
-          <button id="addCustom" class="btn btn-soft" type="button" data-i18n="add">Add</button>
-        </div>
-        <div id="customList" class="chips" style="margin-top:9px"></div>
-      </section>
-
-      <section class="card">
-        <div class="section-head">
-          <div class="num">2</div>
-          <div>
-            <h2 data-i18n="photoTitle">Photograph the ingredient label</h2>
-            <p data-i18n="photoBody">Fill the frame with the printed ingredients. You can add up to three photos.</p>
-          </div>
-        </div>
-
-        <div id="capture" class="capture">
-          <div class="capture-inner">
-            <div class="camera-icon" aria-hidden="true">
-              <svg width="29" height="29" viewBox="0 0 24 24" fill="none">
-                <path d="M8.2 6.5 9.4 4.8h5.2l1.2 1.7H19a2 2 0 0 1 2 2v8.7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8.5a2 2 0 0 1 2-2h3.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                <circle cx="12" cy="12.7" r="3.5" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
-            </div>
-            <h3 data-i18n="captureTitle">Take a close, clear photo</h3>
-            <p data-i18n="captureBody">Focus on the ingredient list, not the front of the package.</p>
-            <button id="choosePhoto" class="btn btn-primary" type="button" data-i18n="choosePhoto">Take or choose photo</button>
-            <input id="photoInput" type="file" accept="image/*" capture="environment" multiple hidden />
-          </div>
-        </div>
-
-        <div id="photoGrid" class="photo-grid"></div>
-
-        <div class="tips">
-          <div class="tip" data-i18n="tip1">Use bright, even light and avoid glare.</div>
-          <div class="tip" data-i18n="tip2">Keep the ingredient text large and in focus.</div>
-          <div class="tip" data-i18n="tip3">If the label wraps around, add another photo.</div>
-        </div>
-
-        <div class="action-area">
-          <button id="analyzeBtn" class="btn btn-brand btn-wide" type="button" disabled data-i18n="analyze">Analyze ingredients</button>
-          <div class="action-note" data-i18n="actionNote">ALLER AI will not return a positive result when the image is not reliable enough to analyze.</div>
-        </div>
-
-        <div id="analysis" class="analysis">
-          <div class="spinner"></div>
-          <strong data-i18n="checking">Checking the label…</strong>
-          <span data-i18n="checkingSub">Reading ingredients, normalizing terms, and verifying matches.</span>
-        </div>
-
-        <div id="result" class="result neutral" aria-live="polite">
-          <div class="result-top">
-            <div class="result-icon" id="resultIcon">!</div>
-            <div>
-              <h3 id="resultTitle">—</h3>
-              <p id="resultBody">—</p>
-            </div>
-          </div>
-          <div id="evidence" class="evidence hidden"></div>
-        </div>
-
-        <div class="privacy">
-          <span aria-hidden="true">🔒</span>
-          <span data-i18n="localProfile">Your selected profile is stored only in this browser.</span>
-        </div>
-      </section>
-    </div>
-
-    <footer class="footer" data-i18n="disclaimer">
-      ALLER AI is a decision-support tool, not a medical guarantee. Product formulations can change. For severe allergies, always verify the original label and manufacturer guidance.
-    </footer>
-  </main>
-
+<main class="app">
+<header><div class="brand"><div class="mark">알러</div><div><div class="name">ALLER AI</div><div class="tag" data-i18n="tag">Understand the label before you eat.</div></div></div><select id="lang"><option value="en">EN</option><option value="ko">한국어</option></select></header>
+<section class="hero"><h1 data-i18n="hero">Check one product or a whole basket.</h1><p data-i18n="sub">Add several photos of the same product, or create separate product groups. Package language is detected automatically across major writing systems; no language selection is required.</p></section>
+<div class="stack">
+<section class="card">
+<div class="head"><div class="num">1</div><div><h2 data-i18n="profile">What should we watch for?</h2><p data-i18n="profileSub">Choose one or more allergens or ingredients you avoid.</p></div></div>
+<div class="chips" id="chips">
+<label class="chip"><input type="checkbox" value="milk"><span data-i18n="milk">Milk</span></label><label class="chip"><input type="checkbox" value="egg"><span data-i18n="egg">Egg</span></label><label class="chip"><input type="checkbox" value="peanut"><span data-i18n="peanut">Peanut</span></label><label class="chip"><input type="checkbox" value="tree_nuts"><span data-i18n="treeNuts">Tree nuts</span></label><label class="chip"><input type="checkbox" value="soy"><span data-i18n="soy">Soy</span></label><label class="chip"><input type="checkbox" value="wheat"><span data-i18n="wheat">Wheat</span></label><label class="chip"><input type="checkbox" value="sesame"><span data-i18n="sesame">Sesame</span></label><label class="chip"><input type="checkbox" value="fish"><span data-i18n="fish">Fish</span></label><label class="chip"><input type="checkbox" value="shellfish"><span data-i18n="shellfish">Shellfish</span></label>
+</div>
+<div class="custom"><input id="custom" placeholder="Other ingredient, e.g. gelatin"><button class="btn soft" id="add" data-i18n="add">Add</button></div><div class="chips" id="customList" style="margin-top:9px"></div>
+</section>
+<section class="card">
+<div class="head"><div class="num">2</div><div><h2 data-i18n="products">Add product photos</h2><p data-i18n="productsSub">Up to 3 photos belong to one product. Use “Add another product” for a different item.</p></div></div>
+<div id="products"></div>
+<button id="addProduct" class="btn outline addProduct" data-i18n="addProduct">+ Add another product</button>
+<div class="tips"><div class="tip"><strong>🌐 Automatic multilingual OCR</strong><br><span data-i18n="autoLang">No package-language selection needed.</span></div><div class="tip" data-i18n="tip1">Include the ingredient/allergen statement.</div><div class="tip" data-i18n="tip2">Include the nutrition panel if you want calories.</div><div class="tip" data-i18n="tip3">Use extra photos when text wraps around the package.</div></div>
+<div class="action"><button id="analyze" class="btn brandbtn" disabled data-i18n="analyze">Analyze products</button><div class="note" data-i18n="note">Calories are summed only when full-package energy can be calculated from the visible label.</div></div>
+<div id="loading" class="loading"><div class="spinner"></div><strong data-i18n="checking">Checking products…</strong><span data-i18n="checkingSub">Reading each product separately.</span></div>
+<div id="result" class="result"><div class="summaryHead"><div id="ricon" class="ricon">i</div><div><h3 id="rtitle"></h3><p id="rbody"></p></div></div><div id="calTotal" class="calTotal" style="display:none"></div><div id="productResults" class="productResults"></div></div>
+<div class="privacy">🔒 <span data-i18n="privacy">Your selected profile is stored only in this browser.</span></div>
+</section>
+</div>
+<div class="footer" data-i18n="footer">ALLER AI is a decision-support prototype, not a medical guarantee. For severe allergies, verify the original label and manufacturer guidance.</div>
+</main>
 <script>
-(() => {
-  "use strict";
+(()=>{
+const IS_LOCAL=location.hostname==="127.0.0.1"||location.hostname==="localhost";
+const API="/api/analyze",MAX_PRODUCTS=6,MAX_PHOTOS=3;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const lang=$("#lang"),productsEl=$("#products"),analyze=$("#analyze"),result=$("#result"),loading=$("#loading"),productResults=$("#productResults"),calTotal=$("#calTotal");
+let custom=[],products=[{id:1,photos:[]}],nextId=2;
 
-  /* ============================================================
-     BACKEND CONNECTION
-     ------------------------------------------------------------
-     Accuracy-first design: this page intentionally does NOT run
-     consumer-grade OCR or allergy classification in the browser.
-     Connect a trusted server endpoint here later.
+const I={
+en:{tag:"Understand the label before you eat.",hero:"Check one product or a whole basket.",sub:"Add several photos of the same product, or create separate product groups. Package language is detected automatically across major writing systems; no language selection is required.",profile:"What should we watch for?",profileSub:"Choose one or more allergens or ingredients you avoid.",milk:"Milk",egg:"Egg",peanut:"Peanut",treeNuts:"Tree nuts",soy:"Soy",wheat:"Wheat",sesame:"Sesame",fish:"Fish",shellfish:"Shellfish",add:"Add",products:"Add product photos",productsSub:"Up to 3 photos belong to one product. Use “Add another product” for a different item.",product:"Product",photosForSame:"Photos in this box are treated as the same product.",choose:"Take or choose photos",remove:"Remove",addProduct:"+ Add another product",tip1:"Include the ingredient/allergen statement.",tip2:"Include the nutrition panel if you want calories.",tip3:"Use extra photos when text wraps around the package.",analyze:"Analyze products",note:"Calories are summed only when full-package energy can be calculated from the visible label.",checking:"Checking products…",checkingSub:"Reading each product separately.",privacy:"Your selected profile is stored only in this browser.",footer:"ALLER AI is a decision-support prototype, not a medical guarantee. For severe allergies, verify the original label and manufacturer guidance.",noProfile:"Select at least one item to check.",addPhoto:"Add at least one product photo.",conflict:"Conflict detected",caution:"Caution",clear:"No listed conflict detected",mixed:"Products checked",matched:"Matched term",mapped:"Mapped to",reason:"Reason",packageCalories:"Estimated full-package calories",basis:"Calculation",totalCalories:"Estimated total for full packages",knownCalories:"Known calorie total",incompleteCalories:"Some products could not be included because the label did not provide enough information.",noCalories:"Full-package calories could not be calculated from the visible labels.",photoAdded:"Photo added",serverTitle:"Cannot reach the local backend",serverBody:"Open http://127.0.0.1:8000/api/health. If that works, reload this local page.",autoLang:"No package-language selection needed.",directMatches:"Direct matches",cautionMatches:"Precautionary matches",ocrCoverage:"OCR families used"},
+ko:{tag:"먹기 전에 라벨을 이해하세요.",hero:"한 제품부터 여러 제품까지 한 번에 확인하세요.",sub:"같은 제품은 여러 장의 사진을 추가하고, 다른 제품은 별도 제품으로 추가하세요. ALLER AI가 제품별로 확인하고 라벨 정보가 충분하면 전체 포장 열량도 계산합니다.",profile:"무엇을 확인할까요?",profileSub:"피하고 싶은 알레르기 유발물질 또는 성분을 선택하세요.",milk:"우유",egg:"달걀",peanut:"땅콩",treeNuts:"견과류",soy:"대두",wheat:"밀",sesame:"참깨",fish:"생선",shellfish:"갑각류",add:"추가",products:"제품 사진 추가",productsSub:"한 제품당 최대 3장까지 추가할 수 있습니다. 다른 제품은 ‘다른 제품 추가’를 사용하세요.",product:"제품",photosForSame:"이 박스의 사진은 같은 제품으로 분석됩니다.",choose:"촬영 또는 사진 선택",remove:"삭제",addProduct:"+ 다른 제품 추가",tip1:"원재료/알레르기 표시가 보이게 촬영하세요.",tip2:"열량 계산을 원하면 영양정보도 포함하세요.",tip3:"글자가 포장지 둘레로 이어지면 사진을 추가하세요.",analyze:"제품 분석",note:"보이는 라벨에서 전체 포장 열량을 계산할 수 있을 때만 합산합니다.",checking:"제품 확인 중…",checkingSub:"각 제품을 따로 읽고 있습니다.",privacy:"선택한 프로필은 이 브라우저에만 저장됩니다.",footer:"ALLER AI는 의사결정 보조 프로토타입이며 의학적 안전을 보장하지 않습니다. 중증 알레르기의 경우 원본 라벨과 제조사 안내를 확인하세요.",noProfile:"확인할 항목을 하나 이상 선택하세요.",addPhoto:"제품 사진을 하나 이상 추가하세요.",conflict:"주의 성분이 확인되었습니다",caution:"주의가 필요합니다",clear:"표시된 충돌 성분 없음",mixed:"제품 분석 결과",matched:"확인된 표현",mapped:"연결된 항목",reason:"판단 근거",packageCalories:"전체 포장 예상 열량",basis:"계산 근거",totalCalories:"전체 제품 예상 열량 합계",knownCalories:"확인 가능한 열량 합계",incompleteCalories:"일부 제품은 라벨 정보가 부족해 합계에 포함되지 않았습니다.",noCalories:"보이는 라벨만으로 전체 포장 열량을 계산할 수 없습니다.",photoAdded:"사진 추가됨",serverTitle:"로컬 백엔드에 연결할 수 없습니다",serverBody:"http://127.0.0.1:8000/api/health 를 열어 확인한 뒤 이 페이지를 새로고침하세요.",autoLang:"제품 언어를 선택할 필요가 없습니다.",directMatches:"직접 확인된 항목",cautionMatches:"주의 표시 항목",ocrCoverage:"사용된 OCR 계열"},
+fa:{tag:"قبل از خوردن، برچسب را بفهم.",hero:"یک محصول یا چند محصول را با هم بررسی کن.",sub:"برای یک محصول چند عکس اضافه کن، یا برای کالاهای مختلف گروه جدا بساز. ALLER AI هر محصول را جدا بررسی می‌کند و اگر اطلاعات برچسب کافی باشد کالری کل بسته را هم حساب می‌کند.",profile:"چه چیزهایی را بررسی کنیم؟",profileSub:"آلرژن‌ها یا موادی را که از آن‌ها پرهیز می‌کنی انتخاب کن.",milk:"شیر",egg:"تخم‌مرغ",peanut:"بادام زمینی",treeNuts:"آجیل درختی",soy:"سویا",wheat:"گندم",sesame:"کنجد",fish:"ماهی",shellfish:"صدف و سخت‌پوستان",add:"افزودن",products:"عکس محصولات را اضافه کن",productsSub:"برای هر محصول تا ۳ عکس. برای کالای متفاوت «افزودن محصول دیگر» را بزن.",product:"محصول",photosForSame:"عکس‌های این کادر همگی یک محصول در نظر گرفته می‌شوند.",choose:"گرفتن یا انتخاب عکس",remove:"حذف",addProduct:"+ افزودن محصول دیگر",tip1:"بخش مواد/هشدار آلرژی را در عکس داشته باش.",tip2:"برای محاسبه کالری، جدول تغذیه را هم بگیر.",tip3:"اگر متن دور بسته ادامه دارد عکس بیشتری اضافه کن.",analyze:"بررسی محصولات",note:"کالری فقط وقتی جمع می‌شود که از اطلاعات قابل‌مشاهده بتوان کالری کل بسته را محاسبه کرد.",checking:"در حال بررسی محصولات…",checkingSub:"هر محصول جداگانه خوانده می‌شود.",privacy:"پروفایل انتخابی فقط در همین مرورگر ذخیره می‌شود.",footer:"ALLER AI یک نمونه کمک‌تصمیم است و تضمین پزشکی ارائه نمی‌کند. در حساسیت شدید، برچسب اصلی و اطلاعات سازنده را بررسی کن.",noProfile:"حداقل یک مورد برای بررسی انتخاب کن.",addPhoto:"حداقل یک عکس محصول اضافه کن.",conflict:"ماده ناسازگار پیدا شد",caution:"نیاز به احتیاط",clear:"ناسازگاری ثبت‌شده‌ای پیدا نشد",mixed:"نتیجه بررسی محصولات",matched:"عبارت پیدا‌شده",mapped:"تطبیق با",reason:"دلیل",packageCalories:"کالری تخمینی کل بسته",basis:"مبنای محاسبه",totalCalories:"مجموع تخمینی کالری کل بسته‌ها",knownCalories:"مجموع کالری قابل‌محاسبه",incompleteCalories:"اطلاعات بعضی محصولات برای محاسبه کالری کافی نبود و در مجموع لحاظ نشد.",noCalories:"از برچسب‌های قابل‌مشاهده نتوانستیم کالری کل بسته را محاسبه کنیم.",photoAdded:"عکس اضافه شد",serverTitle:"اتصال به بک‌اند محلی ممکن نیست",serverBody:"ابتدا http://127.0.0.1:8000/api/health را باز کن؛ اگر کار می‌کند این صفحه را Refresh کن.",autoLang:"نیازی به انتخاب زبان محصول نیست.",directMatches:"موارد مستقیم",cautionMatches:"موارد هشدار احتیاطی",ocrCoverage:"خانواده‌های OCR استفاده‌شده"}
+};
 
-     Expected POST: multipart/form-data
-       profile: JSON string
-       images: 1-3 image files
+function t(k){return(I[lang.value]||I.en)[k]||I.en[k]||k}
+function setLang(v){document.documentElement.lang=v;document.documentElement.dir=v==="fa"?"rtl":"ltr";$$("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));localStorage.setItem("aller_lang",v);renderProducts()}
+lang.value=localStorage.getItem("aller_lang")||"en";if(!["en","ko"].includes(lang.value))lang.value="en";lang.onchange=()=>setLang(lang.value);
 
-     Example response:
-     {
-       "status": "conflict" | "caution" | "no_listed_conflict" | "retake",
-       "title": "...",                  // optional
-       "message": "...",                // optional
-       "matched_label_term": "카제인나트륨",
-       "mapped_to": "Milk",
-       "reason": "Sodium caseinate is milk-derived."
-     }
-     ============================================================ */
-  const API_ENDPOINT =
-    location.hostname === "127.0.0.1" || location.hostname === "localhost"
-      ? "http://127.0.0.1:8000/v1/analyze"
-      : "https://aller-ai.onrender.com/v1/analyze";
+function profile(){return{allergens:$$('#chips input:checked').map(x=>x.value),custom_avoid:[...custom]}}
+function save(){localStorage.setItem("aller_profile",JSON.stringify(profile()));update()}
+try{const p=JSON.parse(localStorage.getItem("aller_profile")||"{}");(p.allergens||[]).forEach(v=>{const x=$(`#chips input[value="${v}"]`);if(x)x.checked=true});custom=Array.isArray(p.custom_avoid)?p.custom_avoid:[]}catch{}
+$("#chips").onchange=save;
 
-  const $ = s => document.querySelector(s);
-  const $$ = s => [...document.querySelectorAll(s)];
+function renderCustom(){const e=$("#customList");e.innerHTML="";custom.forEach((v,i)=>{const l=document.createElement("label");l.className="chip";l.innerHTML="<input type='checkbox' checked><span></span>";l.querySelector("span").textContent=v+" ×";l.onclick=x=>{x.preventDefault();custom.splice(i,1);renderCustom();save()};e.appendChild(l)})}
+$("#add").onclick=()=>{const v=$("#custom").value.trim();if(v&&!custom.some(x=>x.toLowerCase()===v.toLowerCase()))custom.push(v);$("#custom").value="";renderCustom();save()};
+$("#custom").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("#add").click()}};
 
-  const photoInput = $("#photoInput");
-  const choosePhoto = $("#choosePhoto");
-  const photoGrid = $("#photoGrid");
-  const analyzeBtn = $("#analyzeBtn");
-  const analysis = $("#analysis");
-  const result = $("#result");
-  const resultTitle = $("#resultTitle");
-  const resultBody = $("#resultBody");
-  const resultIcon = $("#resultIcon");
-  const evidence = $("#evidence");
-  const addCustom = $("#addCustom");
-  const customAvoid = $("#customAvoid");
-  const customList = $("#customList");
-  const uiLang = $("#uiLang");
-
-  let photos = [];
-  let customTerms = [];
-
-  const i18n = {
-    en: {
-      tagline:"Understand the label before you eat.",
-      eyebrow:"For packaged food labels",
-      heroTitle:"Check ingredients against what matters to you.",
-      heroBody:"Take a clear photo of the ingredient label. ALLER AI checks multilingual ingredient terms and known derivatives against your selected profile.",
-      profileTitle:"What should we watch for?",
-      profileBody:"Choose one or more allergens or ingredients you avoid.",
-      milk:"Milk",egg:"Egg",peanut:"Peanut",treeNuts:"Tree nuts",soy:"Soy",wheat:"Wheat",sesame:"Sesame",fish:"Fish",shellfish:"Shellfish",
-      customPlaceholder:"Other ingredient, e.g. gelatin",
-      add:"Add",
-      photoTitle:"Photograph the ingredient label",
-      photoBody:"Fill the frame with the printed ingredients. You can add up to three photos.",
-      captureTitle:"Take a close, clear photo",
-      captureBody:"Focus on the ingredient list, not the front of the package.",
-      choosePhoto:"Take or choose photo",
-      tip1:"Use bright, even light and avoid glare.",
-      tip2:"Keep the ingredient text large and in focus.",
-      tip3:"If the label wraps around, add another photo.",
-      analyze:"Analyze ingredients",
-      actionNote:"ALLER AI will not return a positive result when the image is not reliable enough to analyze.",
-      checking:"Checking the label…",
-      checkingSub:"Reading ingredients, normalizing terms, and verifying matches.",
-      localProfile:"Your selected profile is stored only in this browser.",
-      disclaimer:"ALLER AI is a decision-support tool, not a medical guarantee. Product formulations can change. For severe allergies, always verify the original label and manufacturer guidance.",
-      goodPhoto:"Photo looks usable",
-      tooSmall:"Move closer to the label",
-      tooDark:"Photo is too dark",
-      tooBright:"Too much glare",
-      tooBlurry:"Hold the camera steadier",
-      maxPhotos:"You can add up to three photos.",
-      noProfile:"Select at least one item to check.",
-      addPhoto:"Add a clear ingredient-label photo.",
-      retakeTitle:"Please retake the label photo",
-      retakeBody:"The ingredient text is not clear enough for a reliable check. Move closer, keep the label flat, and avoid glare.",
-      conflictTitle:"Conflict detected",
-      cautionTitle:"Caution",
-      clearTitle:"No listed conflict detected",
-      clearBody:"No conflict with your selected profile was found in the ingredients that could be verified. This is not a guarantee that the product is safe.",
-      serviceTitle:"Analysis engine not connected",
-      serviceBody:"The new accuracy-focused interface is ready. Connect the verified server-side vision and ingredient engine before using this for real product decisions.",
-      matchedTerm:"Matched label term",
-      mappedTo:"Mapped to",
-      reason:"Reason",
-      remove:"Remove"
-    },
-    ko: {
-      tagline:"먹기 전에 라벨을 이해하세요.",
-      eyebrow:"포장식품 라벨 전용",
-      heroTitle:"나에게 중요한 성분을 확인하세요.",
-      heroBody:"원재료명이 선명하게 보이도록 촬영하세요. ALLER AI가 다국어 원재료명과 관련 유래 성분을 선택한 프로필과 대조합니다.",
-      profileTitle:"무엇을 확인할까요?",
-      profileBody:"피하고 싶은 알레르기 유발물질 또는 성분을 선택하세요.",
-      milk:"우유",egg:"달걀",peanut:"땅콩",treeNuts:"견과류",soy:"대두",wheat:"밀",sesame:"참깨",fish:"생선",shellfish:"갑각류",
-      customPlaceholder:"기타 피하고 싶은 성분 (예: 젤라틴)",
-      add:"추가",
-      photoTitle:"원재료명 라벨을 촬영하세요",
-      photoBody:"원재료명 글자가 화면을 충분히 채우도록 촬영하세요. 최대 3장까지 추가할 수 있습니다.",
-      captureTitle:"가까이에서 선명하게 촬영",
-      captureBody:"제품 앞면이 아니라 원재료명 표시에 초점을 맞춰주세요.",
-      choosePhoto:"촬영 또는 사진 선택",
-      tip1:"밝고 균일한 조명을 사용하고 반사를 피하세요.",
-      tip2:"원재료명 글자가 크고 선명하게 보이게 하세요.",
-      tip3:"라벨이 길면 다른 부분을 한 장 더 촬영하세요.",
-      analyze:"원재료 분석",
-      actionNote:"이미지 신뢰도가 충분하지 않으면 ALLER AI는 긍정적인 판정을 반환하지 않습니다.",
-      checking:"라벨을 확인하고 있습니다…",
-      checkingSub:"원재료를 읽고, 용어를 정규화하고, 일치 항목을 검증합니다.",
-      localProfile:"선택한 프로필은 이 브라우저에만 저장됩니다.",
-      disclaimer:"ALLER AI는 의사결정 보조 도구이며 의학적 안전을 보장하지 않습니다. 제품 배합은 변경될 수 있으므로 중증 알레르기가 있는 경우 원본 라벨과 제조사 안내를 반드시 확인하세요.",
-      goodPhoto:"사용 가능한 사진",
-      tooSmall:"라벨에 더 가까이 촬영하세요",
-      tooDark:"사진이 너무 어둡습니다",
-      tooBright:"반사가 너무 심합니다",
-      tooBlurry:"카메라를 더 안정적으로 잡아주세요",
-      maxPhotos:"사진은 최대 3장까지 추가할 수 있습니다.",
-      noProfile:"확인할 항목을 하나 이상 선택하세요.",
-      addPhoto:"선명한 원재료명 사진을 추가하세요.",
-      retakeTitle:"라벨을 다시 촬영해주세요",
-      retakeBody:"신뢰할 수 있는 확인을 하기에는 글자가 충분히 선명하지 않습니다. 더 가까이 촬영하고 반사를 피해주세요.",
-      conflictTitle:"주의 성분이 확인되었습니다",
-      cautionTitle:"주의가 필요합니다",
-      clearTitle:"표시된 충돌 성분 없음",
-      clearBody:"검증 가능한 원재료에서 선택한 프로필과 충돌하는 항목이 발견되지 않았습니다. 제품의 절대적 안전을 의미하지는 않습니다.",
-      serviceTitle:"분석 엔진 연결 전",
-      serviceBody:"정확도 중심의 새 인터페이스가 준비되었습니다. 실제 판정 전 서버 기반 비전·원재료 분석 엔진을 연결해야 합니다.",
-      matchedTerm:"라벨에서 확인된 표현",
-      mappedTo:"연결된 알레르기 항목",
-      reason:"판단 근거",
-      remove:"삭제"
-    },
-    fa: {
-      tagline:"قبل از خوردن، برچسب را بفهم.",
-      eyebrow:"ویژه محصولات غذایی بسته‌بندی‌شده",
-      heroTitle:"مواد تشکیل‌دهنده را با حساسیت‌های خودت بررسی کن.",
-      heroBody:"از فهرست مواد تشکیل‌دهنده یک عکس واضح بگیر. ALLER AI اصطلاحات چندزبانه و مشتقات شناخته‌شده را با پروفایل انتخابی تو تطبیق می‌دهد.",
-      profileTitle:"چه چیزهایی را بررسی کنیم؟",
-      profileBody:"یک یا چند آلرژن یا ماده‌ای را که می‌خواهی از آن پرهیز کنی انتخاب کن.",
-      milk:"شیر",egg:"تخم‌مرغ",peanut:"بادام زمینی",treeNuts:"آجیل درختی",soy:"سویا",wheat:"گندم",sesame:"کنجد",fish:"ماهی",shellfish:"صدف و سخت‌پوستان",
-      customPlaceholder:"ماده دیگر، مثلاً ژلاتین",
-      add:"افزودن",
-      photoTitle:"از فهرست مواد تشکیل‌دهنده عکس بگیر",
-      photoBody:"متن مواد تشکیل‌دهنده باید بخش اصلی تصویر باشد. حداکثر سه عکس می‌توانی اضافه کنی.",
-      captureTitle:"از نزدیک و واضح عکس بگیر",
-      captureBody:"روی فهرست مواد تمرکز کن، نه جلوی بسته‌بندی.",
-      choosePhoto:"گرفتن یا انتخاب عکس",
-      tip1:"نور یکنواخت باشد و بازتاب روی بسته نیفتد.",
-      tip2:"نوشته‌های مواد تشکیل‌دهنده بزرگ و در فوکوس باشند.",
-      tip3:"اگر برچسب دور بسته ادامه دارد، یک عکس دیگر اضافه کن.",
-      analyze:"بررسی مواد تشکیل‌دهنده",
-      actionNote:"اگر کیفیت تصویر برای تحلیل قابل اعتماد کافی نباشد، ALLER AI نتیجه مثبت نمایش نمی‌دهد.",
-      checking:"در حال بررسی برچسب…",
-      checkingSub:"خواندن مواد، یکسان‌سازی اصطلاحات و تأیید تطبیق‌ها.",
-      localProfile:"پروفایل انتخابی فقط در همین مرورگر ذخیره می‌شود.",
-      disclaimer:"ALLER AI ابزار کمک‌تصمیم است و تضمین پزشکی ارائه نمی‌کند. فرمول محصولات ممکن است تغییر کند. در حساسیت‌های شدید، همیشه برچسب اصلی و اطلاعات سازنده را بررسی کن.",
-      goodPhoto:"عکس قابل استفاده است",
-      tooSmall:"به برچسب نزدیک‌تر شو",
-      tooDark:"عکس بیش از حد تاریک است",
-      tooBright:"بازتاب نور زیاد است",
-      tooBlurry:"دوربین را ثابت‌تر نگه دار",
-      maxPhotos:"حداکثر سه عکس می‌توانی اضافه کنی.",
-      noProfile:"حداقل یک مورد برای بررسی انتخاب کن.",
-      addPhoto:"یک عکس واضح از فهرست مواد اضافه کن.",
-      retakeTitle:"لطفاً دوباره از برچسب عکس بگیر",
-      retakeBody:"متن برای یک بررسی قابل اعتماد به اندازه کافی واضح نیست. نزدیک‌تر شو، برچسب را صاف نگه دار و از بازتاب نور جلوگیری کن.",
-      conflictTitle:"ماده ناسازگار پیدا شد",
-      cautionTitle:"نیاز به احتیاط",
-      clearTitle:"ناسازگاری ثبت‌شده‌ای پیدا نشد",
-      clearBody:"در مواد قابل تأیید، موردی ناسازگار با پروفایل انتخابی پیدا نشد. این نتیجه به معنی تضمین ایمن بودن محصول نیست.",
-      serviceTitle:"موتور تحلیل هنوز متصل نشده",
-      serviceBody:"رابط جدید با تمرکز بر دقت آماده است. پیش از استفاده واقعی باید موتور بینایی و تحلیل مواد در سمت سرور متصل شود.",
-      matchedTerm:"عبارت روی برچسب",
-      mappedTo:"تطبیق با",
-      reason:"دلیل",
-      remove:"حذف"
+function productNumber(index){return index+1}
+function renderProducts(){
+  productsEl.innerHTML="";
+  products.forEach((p,idx)=>{
+    const box=document.createElement("div");box.className="product";
+    const top=document.createElement("div");top.className="ptop";
+    const left=document.createElement("div");left.innerHTML=`<div class="ptitle">${t("product")} ${productNumber(idx)}</div><div class="psub">${t("photosForSame")}</div>`;
+    top.appendChild(left);
+    if(products.length>1){
+      const rm=document.createElement("button");rm.className="removeProduct";rm.textContent=t("remove");rm.onclick=()=>{p.photos.forEach(x=>URL.revokeObjectURL(x.url));products.splice(idx,1);renderProducts();update()};top.appendChild(rm)
     }
+    const cap=document.createElement("div");cap.className="capture";
+    const btn=document.createElement("button");btn.className="btn primary";btn.textContent=t("choose");
+    const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.multiple=true;inp.hidden=true;
+    btn.onclick=()=>inp.click();
+    inp.onchange=e=>{for(const f of [...e.target.files]){if(p.photos.length>=MAX_PHOTOS)break;if(f.type.startsWith("image/"))p.photos.push({file:f,url:URL.createObjectURL(f)})}inp.value="";renderProducts();update()};
+    const msg=document.createElement("p");msg.textContent=`${p.photos.length}/${MAX_PHOTOS} ${t("photoAdded")}`;
+    cap.append(btn,inp,msg);
+
+    const ph=document.createElement("div");ph.className="photos";
+    p.photos.forEach((photo,j)=>{
+      const d=document.createElement("div");d.className="photo";
+      const im=document.createElement("img");im.src=photo.url;
+      const x=document.createElement("button");x.className="x";x.textContent="×";x.onclick=()=>{URL.revokeObjectURL(photo.url);p.photos.splice(j,1);renderProducts();update()};
+      const b=document.createElement("div");b.className="added";b.textContent=t("photoAdded");
+      d.append(im,x,b);ph.appendChild(d)
+    });
+    box.append(top,cap,ph);productsEl.appendChild(box)
+  });
+  $("#addProduct").disabled=products.length>=MAX_PRODUCTS
+}
+$("#addProduct").onclick=()=>{if(products.length<MAX_PRODUCTS){products.push({id:nextId++,photos:[]});renderProducts();update()}};
+
+function update(){const p=profile();const hasPhoto=products.some(x=>x.photos.length);analyze.disabled=!(hasPhoto&&(p.allergens.length||p.custom_avoid.length))}
+function kindFor(status){if(status==="conflict")return"danger";if(status==="caution")return"warn";if(status==="no_listed_conflict")return"ok";return""}
+function statusLabel(status){return localizedStatus(status)}
+function addEv(parent,label,value){if(value===undefined||value===null||value==="")return;const r=document.createElement("div");r.className="ev";const a=document.createElement("span");a.textContent=label;const b=document.createElement("strong");b.textContent=value;r.append(a,b);parent.appendChild(r)}
+
+function allergenLabel(hit){
+  const map={milk:"milk",egg:"egg",peanut:"peanut",tree_nuts:"treeNuts",soy:"soy",wheat:"wheat",sesame:"sesame",fish:"fish",shellfish:"shellfish"};
+  if(hit&&map[hit.allergen_id])return t(map[hit.allergen_id]);
+  if(hit&&hit.allergen_id==="custom")return lang.value==="ko"?"사용자 지정":(hit.allergen||"Custom avoid");
+  return hit&&hit.allergen?hit.allergen:"";
+}
+function ocrFamilyLabel(name){
+  if(lang.value!=="ko")return name||"";
+  const map={
+    "Korean + English":"한국어·영어",
+    "Latin multilingual":"라틴계 다국어",
+    "Arabic / Persian / Urdu family":"아랍어·페르시아어·우르두어 계열",
+    "Cyrillic family":"키릴 문자 계열",
+    "Devanagari family":"데바나가리 문자 계열",
+    "Japanese":"일본어",
+    "Chinese + English":"중국어·영어",
+    "Thai + English":"태국어·영어",
+    "Greek + English":"그리스어·영어",
+    "Tamil + English":"타밀어·영어",
+    "Telugu + English":"텔루구어·영어",
+    "Merged multilingual OCR":"통합 다국어 OCR"
   };
+  return map[name]||name||"";
+}
+function localizedStatus(status){
+  if(lang.value!=="ko"){
+    if(status==="conflict")return t("conflict");
+    if(status==="caution")return t("caution");
+    if(status==="no_listed_conflict")return t("clear");
+    if(status==="ingredient_not_confirmed")return "Ingredient list not confirmed";
+    if(status==="nutrition_panel")return "Nutrition panel detected";
+    if(status==="unreadable")return "Please retake the label photo";
+    return String(status||"").replaceAll("_"," ");
+  }
+  const map={
+    conflict:"주의 성분 확인",
+    caution:"교차접촉 주의",
+    no_listed_conflict:"표시된 충돌 성분 없음",
+    ingredient_not_confirmed:"원재료 목록 확인 필요",
+    nutrition_panel:"영양정보 확인됨",
+    unreadable:"라벨 재촬영 필요"
+  };
+  return map[status]||String(status||"").replaceAll("_"," ");
+}
+function localizedProductMessage(p){
+  const directNames=[...new Set((p.direct_matches||[]).map(allergenLabel))].filter(Boolean);
+  const cautionNames=[...new Set((p.caution_matches||[]).map(allergenLabel))].filter(Boolean);
 
-  function t(key){
-    const lang = uiLang.value || "en";
-    return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
+  if(lang.value!=="ko")return p.message||"";
+
+  if(p.status==="conflict"){
+    return `선택한 주의 성분이 원재료 또는 직접 알레르기 표시에서 확인되었습니다: ${directNames.join(", ")}.`;
+  }
+  if(p.status==="caution"){
+    return `교차접촉 가능성에 대한 주의 표시가 확인되었습니다: ${cautionNames.join(", ")}.`;
+  }
+  if(p.status==="no_listed_conflict"){
+    return "확인된 원재료 정보에서 선택한 주의 성분이 발견되지 않았습니다.";
+  }
+  if(p.status==="ingredient_not_confirmed"){
+    return "알레르기 관련 표시는 확인했지만 전체 원재료 목록까지는 확인하지 못했습니다.";
+  }
+  if(p.status==="nutrition_panel"){
+    return "영양정보는 확인했지만 전체 원재료 목록은 확인되지 않았습니다.";
+  }
+  if(p.status==="unreadable"){
+    return "읽을 수 있는 라벨 텍스트가 충분하지 않습니다. 원재료 표시가 선명하게 보이도록 다시 촬영해 주세요.";
+  }
+  return p.message||"";
+}
+function localizedReason(p){
+  if(lang.value!=="ko")return p.reason||"";
+  if(p.status==="conflict")return "원재료 또는 직접 알레르기 표시에서 확인되었습니다.";
+  if(p.status==="caution")return "‘혼입 가능’, ‘may contain’과 같은 교차접촉 주의 문구에서 확인되었습니다.";
+  return p.reason||"";
+}
+function localizedBasis(c){
+  if(!c)return"";
+  if(c.reference_kcal!==null&&c.reference_kcal!==undefined&&c.reference_g!==null&&c.reference_g!==undefined&&c.total_weight_g!==null&&c.total_weight_g!==undefined){
+    if(lang.value==="ko")return `${c.reference_g} g당 ${c.reference_kcal} kcal × 총 내용량 ${c.total_weight_g} g 기준`;
+    return `Calculated from ${c.reference_kcal} kcal / ${c.reference_g} g × ${c.total_weight_g} g`;
+  }
+  if(c.package_kcal!==null&&c.package_kcal!==undefined){
+    return lang.value==="ko"?"라벨에 표시된 전체 열량 기준":(c.basis||"Label total energy");
+  }
+  return"";
+}
+
+function showResults(d){
+  loading.classList.remove("show");result.classList.add("show");productResults.innerHTML="";
+  const ps=d.products||[],s=d.summary||{};
+  const conflicts=ps.filter(x=>x.status==="conflict").length,cautions=ps.filter(x=>x.status==="caution").length;
+
+  $("#ricon").textContent=conflicts||cautions?"!":"✓";
+  $("#rtitle").textContent=conflicts?localizedStatus("conflict"):cautions?localizedStatus("caution"):t("mixed");
+
+  if(lang.value==="ko"){
+    $("#rbody").textContent=`제품 ${ps.length}개 · 주의 성분 ${conflicts}건 · 교차접촉 주의 ${cautions}건`;
+  }else{
+    $("#rbody").textContent=`${ps.length} ${ps.length===1?"Product":"Products"} · ${conflicts} ${t("conflict")} · ${cautions} ${t("caution")}`;
   }
 
-  function setLanguage(lang){
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
-    $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
-    $$("[data-i18n-placeholder]").forEach(el => el.placeholder = t(el.dataset.i18nPlaceholder));
-    localStorage.setItem("aller_ui_lang", lang);
-    renderPhotos();
+  if(s.total_package_kcal!==null&&s.total_package_kcal!==undefined){
+    calTotal.style.display="block";
+    const title=s.calories_complete?t("totalCalories"):t("knownCalories");
+    calTotal.innerHTML=`<strong>${Math.round(s.total_package_kcal)} kcal</strong><span>${title}${s.calories_complete?"":" · "+t("incompleteCalories")}</span>`;
+  }else{
+    calTotal.style.display="block";calTotal.innerHTML=`<span>${t("noCalories")}</span>`;
   }
 
-  uiLang.value = localStorage.getItem("aller_ui_lang") || "en";
-  uiLang.addEventListener("change", () => setLanguage(uiLang.value));
+  ps.forEach((p,idx)=>{
+    const box=document.createElement("div");box.className=`presult ${kindFor(p.status)}`;
+    const top=document.createElement("div");top.className="prtop";
+    const title=document.createElement("div");title.className="prtitle";title.textContent=`${t("product")} ${idx+1}`;
+    const badge=document.createElement("div");badge.className="badge";badge.textContent=localizedStatus(p.status);
+    top.append(title,badge);box.appendChild(top);
 
-  function getProfile(){
-    return {
-      allergens: $$("#chips input:checked").map(x => x.value),
-      custom_avoid: [...customTerms]
-    };
-  }
+    const msg=document.createElement("div");msg.className="prmsg";msg.textContent=localizedProductMessage(p);box.appendChild(msg);
 
-  function saveProfile(){
-    localStorage.setItem("aller_profile", JSON.stringify(getProfile()));
-    updateAnalyzeState();
-  }
+    const ev=document.createElement("div");ev.className="evidence";
+    const direct=(p.direct_matches||[]).map(x=>`${allergenLabel(x)} (${x.term})`).join(" · ");
+    const caution=(p.caution_matches||[]).map(x=>`${allergenLabel(x)} (${x.term})`).join(" · ");
+    addEv(ev,t("directMatches"),direct);
+    addEv(ev,t("cautionMatches"),caution);
+    addEv(ev,t("reason"),localizedReason(p));
+    addEv(ev,t("ocrCoverage"),(p.ocr_families_used||[]).map(ocrFamilyLabel).join(" · "));
+    if(ev.children.length)box.appendChild(ev);
 
-  function restoreProfile(){
-    try{
-      const p = JSON.parse(localStorage.getItem("aller_profile") || "{}");
-      (p.allergens || []).forEach(v => {
-        const input = $(`#chips input[value="${CSS.escape(v)}"]`);
-        if(input) input.checked = true;
-      });
-      customTerms = Array.isArray(p.custom_avoid) ? p.custom_avoid : [];
-    }catch{}
-    renderCustom();
-  }
-
-  $("#chips").addEventListener("change", saveProfile);
-
-  function addCustomTerm(){
-    const value = customAvoid.value.trim();
-    if(!value) return;
-    if(!customTerms.some(x => x.toLowerCase() === value.toLowerCase())){
-      customTerms.push(value);
-    }
-    customAvoid.value = "";
-    renderCustom();
-    saveProfile();
-  }
-
-  addCustom.addEventListener("click", addCustomTerm);
-  customAvoid.addEventListener("keydown", e => {
-    if(e.key === "Enter"){
-      e.preventDefault();
-      addCustomTerm();
-    }
-  });
-
-  function renderCustom(){
-    customList.innerHTML = "";
-    customTerms.forEach((term, index) => {
-      const label = document.createElement("label");
-      label.className = "chip";
-      label.innerHTML = `<input type="checkbox" checked><span></span>`;
-      label.querySelector("span").textContent = term + " ×";
-      label.addEventListener("click", e => {
-        e.preventDefault();
-        customTerms.splice(index,1);
-        renderCustom();
-        saveProfile();
-      });
-      customList.appendChild(label);
-    });
-  }
-
-  choosePhoto.addEventListener("click", () => photoInput.click());
-
-  photoInput.addEventListener("change", async e => {
-    const files = [...e.target.files];
-    for(const file of files){
-      if(photos.length >= 3){
-        alert(t("maxPhotos"));
-        break;
-      }
-      if(!file.type.startsWith("image/")) continue;
-      const assessment = await assessImage(file);
-      photos.push({file, assessment, url:URL.createObjectURL(file)});
-    }
-    photoInput.value = "";
-    renderPhotos();
-    updateAnalyzeState();
-  });
-
-  async function assessImage(file){
-    const bitmap = await createImageBitmap(file);
-    const maxSide = 720;
-    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-    const w = Math.max(1, Math.round(bitmap.width * scale));
-    const h = Math.max(1, Math.round(bitmap.height * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext("2d", {willReadFrequently:true});
-    ctx.drawImage(bitmap,0,0,w,h);
-
-    const {data} = ctx.getImageData(0,0,w,h);
-    let sum = 0, sum2 = 0, n = 0;
-    let edgeSum = 0, edgeN = 0;
-
-    const gray = new Float32Array(w*h);
-    for(let i=0,j=0;i<data.length;i+=4,j++){
-      const g = .299*data[i] + .587*data[i+1] + .114*data[i+2];
-      gray[j] = g;
-      sum += g; sum2 += g*g; n++;
-    }
-    const mean = sum/n;
-
-    // A lightweight edge/clarity estimate. It is ONLY a capture-quality gate,
-    // not an OCR confidence score and is never shown numerically to the user.
-    for(let y=1;y<h-1;y+=2){
-      for(let x=1;x<w-1;x+=2){
-        const c = gray[y*w+x];
-        const gx = Math.abs(gray[y*w+x+1]-gray[y*w+x-1]);
-        const gy = Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]);
-        edgeSum += gx+gy;
-        edgeN++;
-      }
-    }
-    const edge = edgeSum / Math.max(1, edgeN);
-
-    const minDim = Math.min(bitmap.width, bitmap.height);
-    let code = "good";
-    if(minDim < 700) code = "small";
-    else if(mean < 55) code = "dark";
-    else if(mean > 225) code = "bright";
-    else if(edge < 17) code = "blurry";
-
-    bitmap.close();
-    return {code};
-  }
-
-  function qualityLabel(code){
-    return ({
-      good:t("goodPhoto"),
-      small:t("tooSmall"),
-      dark:t("tooDark"),
-      bright:t("tooBright"),
-      blurry:t("tooBlurry")
-    })[code] || t("goodPhoto");
-  }
-
-  function renderPhotos(){
-    photoGrid.innerHTML = "";
-    photos.forEach((p,index) => {
-      const card = document.createElement("div");
-      card.className = "photo-card";
-
-      const img = document.createElement("img");
-      img.src = p.url;
-      img.alt = "Ingredient label";
-
-      const remove = document.createElement("button");
-      remove.className = "remove";
-      remove.type = "button";
-      remove.setAttribute("aria-label", t("remove"));
-      remove.textContent = "×";
-      remove.addEventListener("click", () => {
-        URL.revokeObjectURL(p.url);
-        photos.splice(index,1);
-        renderPhotos();
-        updateAnalyzeState();
-      });
-
-      const badge = document.createElement("div");
-      badge.className = "qbadge " + (p.assessment.code === "good" ? "good" : "bad");
-      badge.textContent = qualityLabel(p.assessment.code);
-
-      card.append(img,remove,badge);
-      photoGrid.appendChild(card);
-    });
-  }
-
-  function updateAnalyzeState(){
-    const p = getProfile();
-    analyzeBtn.disabled = !(photos.length && (p.allergens.length || p.custom_avoid.length));
-  }
-
-  function showResult(kind,title,body,data={}){
-    analysis.classList.remove("show");
-    result.className = `result show ${kind}`;
-    resultTitle.textContent = title;
-    resultBody.textContent = body;
-    resultIcon.textContent = kind === "danger" ? "!" : kind === "warn" ? "!" : kind === "ok" ? "✓" : "i";
-
-    evidence.innerHTML = "";
-    const rows = [
-      ["matched_label_term","matchedTerm"],
-      ["mapped_to","mappedTo"],
-      ["reason","reason"]
-    ].filter(([field]) => data[field]);
-
-    if(rows.length){
-      rows.forEach(([field,labelKey]) => {
-        const row = document.createElement("div");
-        row.className = "evidence-row";
-        const a = document.createElement("span");
-        a.textContent = t(labelKey);
-        const b = document.createElement("strong");
-        b.textContent = data[field];
-        row.append(a,b);
-        evidence.appendChild(row);
-      });
-      evidence.classList.remove("hidden");
+    const c=p.calories||{};
+    const kcal=document.createElement("div");kcal.className="kcal";
+    if(c.package_kcal!==null&&c.package_kcal!==undefined){
+      kcal.textContent=`${t("packageCalories")}: ${Math.round(c.package_kcal)} kcal`;
+      const basis=localizedBasis(c);
+      if(basis){const sm=document.createElement("small");sm.textContent=`${t("basis")}: ${basis}`;kcal.appendChild(sm)}
     }else{
-      evidence.classList.add("hidden");
+      kcal.textContent=t("noCalories");
     }
-    result.scrollIntoView({behavior:"smooth",block:"nearest"});
-  }
-
-  analyzeBtn.addEventListener("click", async () => {
-    const profile = getProfile();
-
-    if(!(profile.allergens.length || profile.custom_avoid.length)){
-      showResult("neutral",t("noProfile"),"");
-      return;
-    }
-    if(!photos.length){
-      showResult("neutral",t("addPhoto"),"");
-      return;
-    }
-
-    // Precision-first: if ALL images fail the capture gate, request a retake.
-    const usable = photos.filter(p => p.assessment.code === "good");
-    if(!usable.length){
-      showResult("neutral",t("retakeTitle"),t("retakeBody"));
-      return;
-    }
-
-    result.classList.remove("show");
-    analysis.classList.add("show");
-
-    if(!API_ENDPOINT){
-      await new Promise(r => setTimeout(r, 650));
-      showResult("neutral",t("serviceTitle"),t("serviceBody"));
-      return;
-    }
-
-    try{
-      const form = new FormData();
-      form.append("profile", JSON.stringify(profile));
-      usable.forEach(p => form.append("images",p.file,p.file.name));
-
-      const res = await fetch(API_ENDPOINT,{
-        method:"POST",
-        body:form
-      });
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-
-      switch(data.status){
-        case "conflict":
-          showResult("danger", data.title || t("conflictTitle"), data.message || "", data);
-          break;
-        case "caution":
-          showResult("warn", data.title || t("cautionTitle"), data.message || "", data);
-          break;
-        case "no_listed_conflict":
-          showResult("ok", data.title || t("clearTitle"), data.message || t("clearBody"), data);
-          break;
-        default:
-          showResult("neutral", data.title || t("retakeTitle"), data.message || t("retakeBody"), data);
-      }
-    }catch(err){
-      console.error(err);
-      showResult("neutral",t("retakeTitle"),t("retakeBody"));
-    }
+    box.appendChild(kcal);productResults.appendChild(box)
   });
 
-  restoreProfile();
-  setLanguage(uiLang.value);
-  updateAnalyzeState();
+  result.scrollIntoView({behavior:"smooth",block:"nearest"})
+}
+
+analyze.onclick=async()=>{
+  const p=profile();if(!(p.allergens.length||p.custom_avoid.length)){alert(t("noProfile"));return}
+  const active=products.filter(x=>x.photos.length);if(!active.length){alert(t("addPhoto"));return}
+  if(!IS_LOCAL){alert(t("serverBody"));return}
+  result.classList.remove("show");loading.classList.add("show");
+  const form=new FormData();form.append("profile",JSON.stringify(p));
+  active.forEach((prod,idx)=>prod.photos.forEach(photo=>{form.append("images",photo.file,photo.file.name);form.append("product_ids",String(idx+1))}));
+  try{
+    const r=await fetch(API,{method:"POST",body:form});let d={};try{d=await r.json()}catch(_){}
+    if(!r.ok||d.status==="backend_error"){loading.classList.remove("show");alert(d.detail||d.message||("HTTP "+r.status));return}
+    showResults(d)
+  }catch(e){loading.classList.remove("show");alert(t("serverTitle")+"\n"+t("serverBody"))}
+};
+
+renderCustom();setLang(lang.value);renderProducts();update();
 })();
 </script>
 </body>

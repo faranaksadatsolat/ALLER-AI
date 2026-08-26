@@ -1,0 +1,1414 @@
+{
+  "schema_version": 1,
+  "description": "Canonical allergen concepts and multilingual aliases. Consumer output uses canonical concepts; OCR language is automatic.",
+  "allergens": {
+    "milk": {
+      "label": "Milk",
+      "aliases": {
+        "en": [
+          "milk",
+          "whey",
+          "whey powder",
+          "casein",
+          "caseinate",
+          "milk powder",
+          "skim milk powder",
+          "whole milk powder",
+          "butter",
+          "cheese",
+          "cream",
+          "yogurt"
+        ],
+        "ko": [
+          "우유",
+          "유청",
+          "유청분말",
+          "유청단백",
+          "카제인",
+          "카제인나트륨",
+          "탈지분유",
+          "전지분유",
+          "분유",
+          "버터",
+          "치즈",
+          "크림",
+          "요거트"
+        ],
+        "fr": [
+          "lait",
+          "poudre de lait",
+          "poudre de lait entier",
+          "lait écrémé",
+          "lactosérum",
+          "caséine",
+          "caséinate",
+          "beurre",
+          "fromage",
+          "crème",
+          "yaourt"
+        ],
+        "es": [
+          "leche",
+          "leche en polvo",
+          "leche desnatada en polvo",
+          "suero de leche",
+          "caseína",
+          "caseinato",
+          "mantequilla",
+          "queso",
+          "nata",
+          "yogur"
+        ],
+        "de": [
+          "milch",
+          "milchpulver",
+          "magermilchpulver",
+          "molke",
+          "molkenpulver",
+          "kasein",
+          "kaseinat",
+          "butter",
+          "käse",
+          "sahne",
+          "joghurt"
+        ],
+        "it": [
+          "latte",
+          "latte in polvere",
+          "latte scremato in polvere",
+          "siero di latte",
+          "caseina",
+          "caseinato",
+          "burro",
+          "formaggio",
+          "panna",
+          "yogurt"
+        ],
+        "pt": [
+          "leite",
+          "leite em pó",
+          "leite em po",
+          "soro de leite",
+          "caseína",
+          "caseina",
+          "caseinato",
+          "manteiga",
+          "queijo",
+          "creme de leite",
+          "iogurte"
+        ],
+        "nl": [
+          "melk",
+          "melkpoeder",
+          "magere melkpoeder",
+          "wei",
+          "weipoeder",
+          "caseïne",
+          "caseine",
+          "caseïnaat",
+          "caseinaat",
+          "boter",
+          "kaas",
+          "room",
+          "yoghurt"
+        ],
+        "ru": [
+          "молоко",
+          "сухое молоко",
+          "сыворотка",
+          "казеин",
+          "казеинат",
+          "сливочное масло",
+          "сыр",
+          "сливки",
+          "йогурт"
+        ],
+        "ar": [
+          "حليب",
+          "مسحوق الحليب",
+          "مصل اللبن",
+          "كازين",
+          "كازينات",
+          "زبدة",
+          "جبن",
+          "قشدة",
+          "زبادي"
+        ],
+        "fa": [
+          "شیر",
+          "شیر خشک",
+          "آب پنیر",
+          "پودر آب پنیر",
+          "کازئین",
+          "کازئینات",
+          "کره",
+          "پنیر",
+          "خامه",
+          "ماست"
+        ],
+        "hi": [
+          "दूध",
+          "दूध पाउडर",
+          "मट्ठा",
+          "व्हे",
+          "केसिन",
+          "केसिनेट",
+          "मक्खन",
+          "पनीर",
+          "क्रीम",
+          "दही"
+        ],
+        "ja": [
+          "牛乳",
+          "乳清",
+          "ホエイ",
+          "カゼイン",
+          "カゼイネート",
+          "脱脂粉乳",
+          "全粉乳",
+          "バター",
+          "チーズ",
+          "クリーム",
+          "ヨーグルト"
+        ],
+        "zh": [
+          "牛奶",
+          "乳清",
+          "乳清粉",
+          "酪蛋白",
+          "酪蛋白酸盐",
+          "奶粉",
+          "脱脂奶粉",
+          "全脂奶粉",
+          "黄油",
+          "奶酪",
+          "奶油",
+          "酸奶"
+        ],
+        "th": [
+          "นม",
+          "นมผง",
+          "เวย์",
+          "ผงเวย์",
+          "เคซีน",
+          "เคซิเนต",
+          "เนย",
+          "ชีส",
+          "ครีม",
+          "โยเกิร์ต"
+        ],
+        "tr": [
+          "süt",
+          "süt tozu",
+          "peynir altı suyu",
+          "kazein",
+          "kazeinat",
+          "tereyağı",
+          "peynir",
+          "krema",
+          "yoğurt"
+        ],
+        "id": [
+          "susu",
+          "susu bubuk",
+          "whey",
+          "kasein",
+          "kaseinat",
+          "mentega",
+          "keju",
+          "krim",
+          "yogurt"
+        ]
+      }
+    },
+    "egg": {
+      "label": "Egg",
+      "aliases": {
+        "en": [
+          "egg",
+          "egg white",
+          "egg yolk",
+          "albumen",
+          "ovalbumin"
+        ],
+        "ko": [
+          "계란",
+          "달걀",
+          "난백",
+          "난황",
+          "알부민",
+          "오발부민"
+        ],
+        "fr": [
+          "œuf",
+          "oeuf",
+          "œufs",
+          "oeufs",
+          "blanc d'œuf",
+          "blanc d'oeuf",
+          "jaune d'œuf",
+          "jaune d'oeuf",
+          "ovalbumine"
+        ],
+        "es": [
+          "huevo",
+          "huevos",
+          "clara de huevo",
+          "yema de huevo",
+          "ovoalbúmina",
+          "ovoalbumina"
+        ],
+        "de": [
+          "ei",
+          "eier",
+          "eiklar",
+          "eigelb",
+          "ovalbumin"
+        ],
+        "it": [
+          "uovo",
+          "uova",
+          "albume",
+          "tuorlo",
+          "ovoalbumina"
+        ],
+        "pt": [
+          "ovo",
+          "ovos",
+          "clara de ovo",
+          "gema de ovo",
+          "ovalbumina"
+        ],
+        "nl": [
+          "ei",
+          "eieren",
+          "eiwit",
+          "eigeel",
+          "ovalbumine"
+        ],
+        "ru": [
+          "яйцо",
+          "яйца",
+          "яичный белок",
+          "яичный желток",
+          "овальбумин"
+        ],
+        "ar": [
+          "بيض",
+          "بياض البيض",
+          "صفار البيض",
+          "ألبومين"
+        ],
+        "fa": [
+          "تخم مرغ",
+          "سفیده تخم مرغ",
+          "زرده تخم مرغ",
+          "آلبومین"
+        ],
+        "hi": [
+          "अंडा",
+          "अंडे",
+          "अंडे का सफेद भाग",
+          "अंडे की जर्दी",
+          "एल्बुमिन"
+        ],
+        "ja": [
+          "鶏卵",
+          "卵白",
+          "卵黄",
+          "オボアルブミン"
+        ],
+        "zh": [
+          "鸡蛋",
+          "蛋清",
+          "蛋白",
+          "蛋黄",
+          "卵清蛋白"
+        ],
+        "th": [
+          "ไข่",
+          "ไข่ขาว",
+          "ไข่แดง",
+          "อัลบูมิน"
+        ],
+        "tr": [
+          "yumurta",
+          "yumurta akı",
+          "yumurta sarısı",
+          "ovalbümin"
+        ],
+        "id": [
+          "telur",
+          "putih telur",
+          "kuning telur",
+          "ovalbumin"
+        ]
+      }
+    },
+    "peanut": {
+      "label": "Peanut",
+      "aliases": {
+        "en": [
+          "peanut",
+          "groundnut",
+          "peanut flour",
+          "peanut powder",
+          "peanut butter"
+        ],
+        "ko": [
+          "땅콩",
+          "땅콩가루",
+          "땅콩분말",
+          "땅콩버터"
+        ],
+        "fr": [
+          "arachide",
+          "cacahuète",
+          "cacahuete",
+          "beurre de cacahuète",
+          "beurre de cacahuete"
+        ],
+        "es": [
+          "cacahuete",
+          "cacahuete",
+          "maní",
+          "mani",
+          "mantequilla de cacahuete",
+          "mantequilla de maní"
+        ],
+        "de": [
+          "erdnuss",
+          "erdnüsse",
+          "erdnussbutter"
+        ],
+        "it": [
+          "arachide",
+          "arachidi",
+          "burro di arachidi"
+        ],
+        "pt": [
+          "amendoim",
+          "manteiga de amendoim"
+        ],
+        "nl": [
+          "pinda",
+          "pinda's",
+          "pindakaas"
+        ],
+        "ru": [
+          "арахис",
+          "арахисовая паста"
+        ],
+        "ar": [
+          "فول سوداني",
+          "زبدة الفول السوداني"
+        ],
+        "fa": [
+          "بادام زمینی",
+          "کره بادام زمینی"
+        ],
+        "hi": [
+          "मूंगफली",
+          "मूंगफली का मक्खन"
+        ],
+        "ja": [
+          "落花生",
+          "ピーナッツ",
+          "ピーナッツバター"
+        ],
+        "zh": [
+          "花生",
+          "花生粉",
+          "花生酱"
+        ],
+        "th": [
+          "ถั่วลิสง",
+          "เนยถั่ว"
+        ],
+        "tr": [
+          "yer fıstığı",
+          "fıstık ezmesi"
+        ],
+        "id": [
+          "kacang tanah",
+          "selai kacang"
+        ]
+      }
+    },
+    "tree_nuts": {
+      "label": "Tree nuts",
+      "aliases": {
+        "en": [
+          "almond",
+          "walnut",
+          "cashew",
+          "pistachio",
+          "hazelnut",
+          "pecan",
+          "macadamia",
+          "brazil nut",
+          "pine nut"
+        ],
+        "ko": [
+          "아몬드",
+          "호두",
+          "캐슈넛",
+          "캐슈너트",
+          "피스타치오",
+          "헤이즐넛",
+          "피칸",
+          "마카다미아",
+          "브라질너트",
+          "잣"
+        ],
+        "fr": [
+          "amande",
+          "noix",
+          "noix de cajou",
+          "pistache",
+          "noisette",
+          "noix de pécan",
+          "noix de pecan",
+          "macadamia",
+          "noix du brésil",
+          "noix du bresil",
+          "pignon"
+        ],
+        "es": [
+          "almendra",
+          "nuez",
+          "anacardo",
+          "pistacho",
+          "avellana",
+          "nuez pecana",
+          "macadamia",
+          "nuez de brasil",
+          "piñón",
+          "pinon"
+        ],
+        "de": [
+          "mandel",
+          "walnuss",
+          "cashew",
+          "cashewnuss",
+          "pistazie",
+          "haselnuss",
+          "pekannuss",
+          "macadamia",
+          "paranuss",
+          "pinienkern"
+        ],
+        "it": [
+          "mandorla",
+          "noce",
+          "anacardo",
+          "pistacchio",
+          "nocciola",
+          "noce pecan",
+          "macadamia",
+          "noce del brasile",
+          "pinolo"
+        ],
+        "pt": [
+          "amêndoa",
+          "amendoa",
+          "noz",
+          "castanha de caju",
+          "pistache",
+          "avelã",
+          "avela",
+          "noz pecã",
+          "noz peca",
+          "macadâmia",
+          "macadamia",
+          "castanha do pará",
+          "castanha do para",
+          "pinhão",
+          "pinhao"
+        ],
+        "nl": [
+          "amandel",
+          "walnoot",
+          "cashewnoot",
+          "pistache",
+          "hazelnoot",
+          "pecannoot",
+          "macadamia",
+          "paranoot",
+          "pijnboompit"
+        ],
+        "ru": [
+          "миндаль",
+          "грецкий орех",
+          "кешью",
+          "фисташка",
+          "фундук",
+          "пекан",
+          "макадамия",
+          "бразильский орех",
+          "кедровый орех"
+        ],
+        "ar": [
+          "لوز",
+          "جوز",
+          "كاجو",
+          "فستق",
+          "بندق",
+          "بيكان",
+          "مكاديميا",
+          "جوز برازيلي",
+          "صنوبر"
+        ],
+        "fa": [
+          "بادام",
+          "گردو",
+          "کاجو",
+          "پسته",
+          "فندق",
+          "پکان",
+          "ماکادمیا",
+          "بادام برزیلی",
+          "دانه کاج"
+        ],
+        "hi": [
+          "बादाम",
+          "अखरोट",
+          "काजू",
+          "पिस्ता",
+          "हेज़लनट",
+          "पेकान",
+          "मैकाडामिया",
+          "ब्राज़ील नट",
+          "चिलगोजा"
+        ],
+        "ja": [
+          "アーモンド",
+          "くるみ",
+          "クルミ",
+          "カシューナッツ",
+          "ピスタチオ",
+          "ヘーゼルナッツ",
+          "ピーカンナッツ",
+          "マカダミアナッツ",
+          "ブラジルナッツ",
+          "松の実"
+        ],
+        "zh": [
+          "杏仁",
+          "核桃",
+          "腰果",
+          "开心果",
+          "榛子",
+          "碧根果",
+          "夏威夷果",
+          "巴西坚果",
+          "松子"
+        ],
+        "th": [
+          "อัลมอนด์",
+          "วอลนัท",
+          "เม็ดมะม่วงหิมพานต์",
+          "พิสตาชิโอ",
+          "เฮเซลนัท",
+          "พีแคน",
+          "แมคคาเดเมีย",
+          "บราซิลนัท",
+          "ไพน์นัท"
+        ],
+        "tr": [
+          "badem",
+          "ceviz",
+          "kaju",
+          "antep fıstığı",
+          "fındık",
+          "pekan",
+          "makademya",
+          "brezilya cevizi",
+          "çam fıstığı"
+        ],
+        "id": [
+          "almond",
+          "kenari",
+          "kacang mete",
+          "pistachio",
+          "hazelnut",
+          "pecan",
+          "macadamia",
+          "kacang brasil",
+          "kacang pinus"
+        ]
+      }
+    },
+    "soy": {
+      "label": "Soy",
+      "aliases": {
+        "en": [
+          "soy",
+          "soya",
+          "soybean",
+          "soy lecithin",
+          "soy protein",
+          "soy flour"
+        ],
+        "ko": [
+          "대두",
+          "콩",
+          "대두레시틴",
+          "대두단백",
+          "대두분"
+        ],
+        "fr": [
+          "soja",
+          "lécithine de soja",
+          "lecithine de soja",
+          "protéine de soja",
+          "proteine de soja",
+          "farine de soja"
+        ],
+        "es": [
+          "soja",
+          "soya",
+          "lecitina de soja",
+          "proteína de soja",
+          "proteina de soja",
+          "harina de soja"
+        ],
+        "de": [
+          "soja",
+          "sojabohne",
+          "sojalecithin",
+          "sojaprotein",
+          "sojamehl"
+        ],
+        "it": [
+          "soia",
+          "lecitina di soia",
+          "proteine di soia",
+          "farina di soia"
+        ],
+        "pt": [
+          "soja",
+          "lecitina de soja",
+          "proteína de soja",
+          "proteina de soja",
+          "farinha de soja"
+        ],
+        "nl": [
+          "soja",
+          "sojaboon",
+          "sojalecithine",
+          "soja-eiwit",
+          "sojameel"
+        ],
+        "ru": [
+          "соя",
+          "соевый лецитин",
+          "соевый белок",
+          "соевая мука"
+        ],
+        "ar": [
+          "صويا",
+          "فول الصويا",
+          "ليسيثين الصويا",
+          "بروتين الصويا"
+        ],
+        "fa": [
+          "سویا",
+          "دانه سویا",
+          "لسیتین سویا",
+          "پروتئین سویا"
+        ],
+        "hi": [
+          "सोया",
+          "सोयाबीन",
+          "सोया लेसिथिन",
+          "सोया प्रोटीन"
+        ],
+        "ja": [
+          "大豆",
+          "大豆レシチン",
+          "大豆たんぱく",
+          "大豆タンパク"
+        ],
+        "zh": [
+          "大豆",
+          "黄豆",
+          "大豆卵磷脂",
+          "大豆蛋白"
+        ],
+        "th": [
+          "ถั่วเหลือง",
+          "เลซิตินจากถั่วเหลือง",
+          "โปรตีนถั่วเหลือง"
+        ],
+        "tr": [
+          "soya",
+          "soya fasulyesi",
+          "soya lesitini",
+          "soya proteini"
+        ],
+        "id": [
+          "kedelai",
+          "lesitin kedelai",
+          "protein kedelai"
+        ]
+      }
+    },
+    "wheat": {
+      "label": "Wheat",
+      "aliases": {
+        "en": [
+          "wheat",
+          "wheat flour",
+          "wheat starch",
+          "wheat gluten"
+        ],
+        "ko": [
+          "밀",
+          "밀가루",
+          "소맥",
+          "소맥분",
+          "밀전분",
+          "밀글루텐"
+        ],
+        "fr": [
+          "blé",
+          "ble",
+          "farine de blé",
+          "farine de ble",
+          "amidon de blé",
+          "amidon de ble",
+          "gluten de blé",
+          "gluten de ble"
+        ],
+        "es": [
+          "trigo",
+          "harina de trigo",
+          "almidón de trigo",
+          "almidon de trigo",
+          "gluten de trigo"
+        ],
+        "de": [
+          "weizen",
+          "weizenmehl",
+          "weizenstärke",
+          "weizenstarke",
+          "weizengluten"
+        ],
+        "it": [
+          "grano",
+          "frumento",
+          "farina di frumento",
+          "amido di frumento",
+          "glutine di frumento"
+        ],
+        "pt": [
+          "trigo",
+          "farinha de trigo",
+          "amido de trigo",
+          "glúten de trigo",
+          "gluten de trigo"
+        ],
+        "nl": [
+          "tarwe",
+          "tarwebloem",
+          "tarwemeel",
+          "tarwezetmeel",
+          "tarwegluten"
+        ],
+        "ru": [
+          "пшеница",
+          "пшеничная мука",
+          "пшеничный крахмал",
+          "пшеничный глютен"
+        ],
+        "ar": [
+          "قمح",
+          "دقيق القمح",
+          "نشا القمح",
+          "غلوتين القمح"
+        ],
+        "fa": [
+          "گندم",
+          "آرد گندم",
+          "نشاسته گندم",
+          "گلوتن گندم"
+        ],
+        "hi": [
+          "गेहूं",
+          "गेहूँ",
+          "गेहूं का आटा",
+          "गेहूँ का आटा",
+          "गेहूं स्टार्च",
+          "गेहूं ग्लूटेन"
+        ],
+        "ja": [
+          "小麦",
+          "小麦粉",
+          "小麦でん粉",
+          "小麦澱粉",
+          "小麦グルテン"
+        ],
+        "zh": [
+          "小麦",
+          "小麦粉",
+          "小麦淀粉",
+          "小麦麸质",
+          "小麦面筋"
+        ],
+        "th": [
+          "ข้าวสาลี",
+          "แป้งสาลี",
+          "แป้งข้าวสาลี",
+          "กลูเตนข้าวสาลี"
+        ],
+        "tr": [
+          "buğday",
+          "buğday unu",
+          "buğday nişastası",
+          "buğday gluteni"
+        ],
+        "id": [
+          "gandum",
+          "tepung gandum",
+          "pati gandum",
+          "gluten gandum"
+        ]
+      }
+    },
+    "sesame": {
+      "label": "Sesame",
+      "aliases": {
+        "en": [
+          "sesame",
+          "sesame seed",
+          "sesame oil",
+          "tahini"
+        ],
+        "ko": [
+          "참깨",
+          "깨",
+          "참기름",
+          "타히니"
+        ],
+        "fr": [
+          "sésame",
+          "sesame",
+          "graines de sésame",
+          "graines de sesame",
+          "huile de sésame",
+          "huile de sesame",
+          "tahini"
+        ],
+        "es": [
+          "sésamo",
+          "sesamo",
+          "semillas de sésamo",
+          "semillas de sesamo",
+          "aceite de sésamo",
+          "aceite de sesamo",
+          "tahini"
+        ],
+        "de": [
+          "sesam",
+          "sesamsamen",
+          "sesamöl",
+          "sesamol",
+          "tahini"
+        ],
+        "it": [
+          "sesamo",
+          "semi di sesamo",
+          "olio di sesamo",
+          "tahina"
+        ],
+        "pt": [
+          "gergelim",
+          "sementes de gergelim",
+          "óleo de gergelim",
+          "oleo de gergelim",
+          "tahine"
+        ],
+        "nl": [
+          "sesam",
+          "sesamzaad",
+          "sesamolie",
+          "tahin"
+        ],
+        "ru": [
+          "кунжут",
+          "семена кунжута",
+          "кунжутное масло",
+          "тахини"
+        ],
+        "ar": [
+          "سمسم",
+          "بذور السمسم",
+          "زيت السمسم",
+          "طحينة"
+        ],
+        "fa": [
+          "کنجد",
+          "دانه کنجد",
+          "روغن کنجد",
+          "ارده"
+        ],
+        "hi": [
+          "तिल",
+          "तिल के बीज",
+          "तिल का तेल",
+          "ताहिनी"
+        ],
+        "ja": [
+          "ごま",
+          "ゴマ",
+          "胡麻",
+          "ごま油",
+          "胡麻油",
+          "タヒニ"
+        ],
+        "zh": [
+          "芝麻",
+          "芝麻籽",
+          "芝麻油",
+          "麻酱"
+        ],
+        "th": [
+          "งา",
+          "เมล็ดงา",
+          "น้ำมันงา",
+          "ทาฮินี"
+        ],
+        "tr": [
+          "susam",
+          "susam tohumu",
+          "susam yağı",
+          "tahin"
+        ],
+        "id": [
+          "wijen",
+          "biji wijen",
+          "minyak wijen",
+          "tahini"
+        ]
+      }
+    },
+    "fish": {
+      "label": "Fish",
+      "aliases": {
+        "en": [
+          "fish",
+          "anchovy",
+          "tuna",
+          "salmon",
+          "cod",
+          "sardine",
+          "mackerel"
+        ],
+        "ko": [
+          "어류",
+          "생선",
+          "멸치",
+          "참치",
+          "연어",
+          "대구",
+          "정어리",
+          "고등어"
+        ],
+        "fr": [
+          "poisson",
+          "anchois",
+          "thon",
+          "saumon",
+          "cabillaud",
+          "sardine",
+          "maquereau"
+        ],
+        "es": [
+          "pescado",
+          "anchoa",
+          "atún",
+          "atun",
+          "salmón",
+          "salmon",
+          "bacalao",
+          "sardina",
+          "caballa"
+        ],
+        "de": [
+          "fisch",
+          "sardelle",
+          "thunfisch",
+          "lachs",
+          "kabeljau",
+          "sardine",
+          "makrele"
+        ],
+        "it": [
+          "pesce",
+          "acciuga",
+          "tonno",
+          "salmone",
+          "merluzzo",
+          "sardina",
+          "sgombro"
+        ],
+        "pt": [
+          "peixe",
+          "anchova",
+          "atum",
+          "salmão",
+          "salmao",
+          "bacalhau",
+          "sardinha",
+          "cavala"
+        ],
+        "nl": [
+          "vis",
+          "ansjovis",
+          "tonijn",
+          "zalm",
+          "kabeljauw",
+          "sardine",
+          "makreel"
+        ],
+        "ru": [
+          "рыба",
+          "анчоус",
+          "тунец",
+          "лосось",
+          "треска",
+          "сардина",
+          "скумбрия"
+        ],
+        "ar": [
+          "سمك",
+          "أنشوجة",
+          "تونة",
+          "سلمون",
+          "قد",
+          "سردين",
+          "ماكريل"
+        ],
+        "fa": [
+          "ماهی",
+          "آنچوی",
+          "تن ماهی",
+          "سالمون",
+          "کاد",
+          "ساردین",
+          "ماکرل"
+        ],
+        "hi": [
+          "मछली",
+          "एन्कोवी",
+          "टूना",
+          "सैल्मन",
+          "कॉड",
+          "सार्डिन",
+          "मैकेरल"
+        ],
+        "ja": [
+          "魚",
+          "アンチョビ",
+          "まぐろ",
+          "マグロ",
+          "鮭",
+          "サーモン",
+          "タラ",
+          "いわし",
+          "イワシ",
+          "さば",
+          "サバ"
+        ],
+        "zh": [
+          "鱼",
+          "鳀鱼",
+          "金枪鱼",
+          "三文鱼",
+          "鲑鱼",
+          "鳕鱼",
+          "沙丁鱼",
+          "鲭鱼"
+        ],
+        "th": [
+          "ปลา",
+          "แอนโชวี",
+          "ทูน่า",
+          "แซลมอน",
+          "ปลาคอด",
+          "ซาร์ดีน",
+          "แมคเคอเรล"
+        ],
+        "tr": [
+          "balık",
+          "ançüez",
+          "ton balığı",
+          "somon",
+          "morina",
+          "sardalya",
+          "uskumru"
+        ],
+        "id": [
+          "ikan",
+          "teri",
+          "tuna",
+          "salmon",
+          "kod",
+          "sarden",
+          "makarel"
+        ]
+      }
+    },
+    "shellfish": {
+      "label": "Shellfish",
+      "aliases": {
+        "en": [
+          "shellfish",
+          "crustacean",
+          "crustaceans",
+          "shrimp",
+          "prawn",
+          "crab",
+          "lobster"
+        ],
+        "ko": [
+          "갑각류",
+          "새우",
+          "게",
+          "꽃게",
+          "랍스터",
+          "가재"
+        ],
+        "fr": [
+          "crustacé",
+          "crustaces",
+          "crustacés",
+          "crevette",
+          "crabe",
+          "homard"
+        ],
+        "es": [
+          "crustáceo",
+          "crustaceo",
+          "crustáceos",
+          "crustaceos",
+          "camarón",
+          "camaron",
+          "gamba",
+          "langostino",
+          "cangrejo",
+          "langosta"
+        ],
+        "de": [
+          "krebstiere",
+          "garnele",
+          "garnelen",
+          "krabbe",
+          "hummer"
+        ],
+        "it": [
+          "crostacei",
+          "gambero",
+          "gamberi",
+          "granchio",
+          "aragosta"
+        ],
+        "pt": [
+          "crustáceos",
+          "crustaceos",
+          "camarão",
+          "camarao",
+          "caranguejo",
+          "lagosta"
+        ],
+        "nl": [
+          "schaaldieren",
+          "garnaal",
+          "garnalen",
+          "krab",
+          "kreeft"
+        ],
+        "ru": [
+          "ракообразные",
+          "креветка",
+          "креветки",
+          "краб",
+          "омар"
+        ],
+        "ar": [
+          "قشريات",
+          "روبيان",
+          "جمبري",
+          "سرطان البحر",
+          "سلطعون",
+          "كركند"
+        ],
+        "fa": [
+          "سخت پوستان",
+          "سخت‌پوستان",
+          "میگو",
+          "خرچنگ",
+          "لابستر"
+        ],
+        "hi": [
+          "क्रस्टेशियन",
+          "झींगा",
+          "प्रॉन",
+          "केकड़ा",
+          "लॉबस्टर"
+        ],
+        "ja": [
+          "甲殻類",
+          "えび",
+          "エビ",
+          "海老",
+          "かに",
+          "カニ",
+          "蟹",
+          "ロブスター"
+        ],
+        "zh": [
+          "甲壳类",
+          "虾",
+          "对虾",
+          "蟹",
+          "螃蟹",
+          "龙虾"
+        ],
+        "th": [
+          "สัตว์น้ำเปลือกแข็ง",
+          "กุ้ง",
+          "ปู",
+          "ล็อบสเตอร์"
+        ],
+        "tr": [
+          "kabuklular",
+          "karides",
+          "yengeç",
+          "ıstakoz"
+        ],
+        "id": [
+          "krustasea",
+          "udang",
+          "kepiting",
+          "lobster"
+        ]
+      }
+    }
+  },
+  "label_markers": {
+    "ingredient_headings": [
+      "ingredients",
+      "ingredient list",
+      "원재료명",
+      "원재료",
+      "원료명",
+      "원재료 및 함량",
+      "ingrédients",
+      "ingredients:",
+      "ingredientes",
+      "zutaten",
+      "ingredienti",
+      "ingrediënten",
+      "состав",
+      "ингредиенты",
+      "المكونات",
+      "مواد تشکیل دهنده",
+      "ترکیبات",
+      "सामग्री",
+      "原材料名",
+      "原材料",
+      "配料",
+      "配料表",
+      "成分",
+      "ส่วนประกอบ",
+      "içindekiler",
+      "komposisi"
+    ],
+    "nutrition_headings": [
+      "nutrition facts",
+      "nutrition information",
+      "영양정보",
+      "valeurs nutritionnelles",
+      "información nutricional",
+      "informacion nutricional",
+      "nährwertangaben",
+      "nahrwertangaben",
+      "valori nutrizionali",
+      "informação nutricional",
+      "informacao nutricional",
+      "voedingswaarde",
+      "пищевая ценность",
+      "القيمة الغذائية",
+      "ارزش غذایی",
+      "पोषण",
+      "栄養成分",
+      "营养成分",
+      "ข้อมูลโภชนาการ",
+      "besin değerleri",
+      "informasi nilai gizi"
+    ],
+    "direct_markers": [
+      "contains",
+      "contient",
+      "contiene",
+      "enthält",
+      "enthalt",
+      "contém",
+      "contem",
+      "bevat",
+      "содержит",
+      "يحتوي على",
+      "حاوی",
+      "شامل",
+      "함유",
+      "含む",
+      "含有",
+      "มีส่วนประกอบของ"
+    ],
+    "caution_markers": [
+      "may contain",
+      "traces of",
+      "produced in a facility",
+      "processed in a facility",
+      "manufactured in a facility",
+      "peut contenir",
+      "traces de",
+      "puede contener",
+      "trazas de",
+      "kann enthalten",
+      "spuren von",
+      "può contenere",
+      "puo contenere",
+      "tracce di",
+      "pode conter",
+      "vestígios de",
+      "vestigios de",
+      "kan bevatten",
+      "sporen van",
+      "может содержать",
+      "следы",
+      "قد يحتوي على",
+      "آثار",
+      "ممکن است حاوی",
+      "ممکن است شامل",
+      "آثار",
+      "혼입가능",
+      "혼입 가능",
+      "함유가능",
+      "함유 가능",
+      "같은 제조시설",
+      "동일 제조시설",
+      "含む可能性",
+      "同一工場",
+      "可能含有",
+      "可能含",
+      "อาจมี",
+      "อาจมีส่วนประกอบของ",
+      "eser miktarda içerebilir",
+      "içerebilir",
+      "dapat mengandung"
+    ]
+  }
+}
