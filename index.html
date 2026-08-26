@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>ALLER-AI | Smart Packaged Food Allergy Assistant</title>
+
+  <!-- OCR: loaded only when the user runs OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #111827;
+      --accent: #2563eb;
+      --danger: #b91c1c;
+      --danger-bg: #fef2f2;
+      --warn: #92400e;
+      --warn-bg: #fffbeb;
+      --ok: #166534;
+      --ok-bg: #f0fdf4;
+      --unknown: #475569;
+      --unknown-bg: #f8fafc;
+      --radius: 18px;
+      --shadow: 0 10px 35px rgba(17,24,39,.07);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 60px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+      letter-spacing: .5px;
+    }
+    h1 { font-size: clamp(24px, 3vw, 36px); margin: 0; }
+    .subtitle { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+
+    .badge {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card h2 {
+      font-size: 17px;
+      margin: 0 0 14px;
+    }
+
+    .step {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    button, .file-label {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      font-size: 14px;
+    }
+
+    button.secondary, .file-label.secondary {
+      background: #eef2f7;
+      color: #111827;
+      border: 1px solid var(--line);
+    }
+
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      padding: 11px 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+    }
+
+    .field { margin-bottom: 13px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+    }
+    @media (max-width: 520px) { .checks { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+    .check {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .check input { margin: 0; }
+
+    .preview {
+      min-height: 160px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #fafafa;
+      margin: 12px 0;
+    }
+
+    .preview img {
+      max-width: 100%;
+      max-height: 330px;
+      display: block;
+    }
+
+    .status {
+      display: none;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 14px;
+      border: 1px solid;
+    }
+
+    .status.show { display: block; }
+    .status.avoid { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
+    .status.caution { background: var(--warn-bg); border-color: #fde68a; color: var(--warn); }
+    .status.ok { background: var(--ok-bg); border-color: #bbf7d0; color: var(--ok); }
+    .status.unknown { background: var(--unknown-bg); border-color: #cbd5e1; color: var(--unknown); }
+
+    .status-title {
+      font-size: 20px;
+      font-weight: 850;
+      margin-bottom: 6px;
+    }
+
+    .match-list { margin: 10px 0 0; padding-left: 18px; line-height: 1.55; }
+    .progress {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+      display: none;
+    }
+    .progress.show { display: block; }
+    .bar { height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 9px;
+      margin: 3px 4px 3px 0;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .full { grid-column: 1 / -1; }
+    .footnote {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">알러</div>
+        <div>
+          <h1>ALLER-AI</h1>
+          <p class="subtitle">Multilingual packaged-food ingredient & allergy assistant</p>
+        </div>
+      </div>
+      <div class="badge">Single-page MVP • GitHub Pages ready</div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2><span class="step">1</span>Your profile</h2>
+        <p class="small">Choose the allergens you want ALLER-AI to check against the package label.</p>
+
+        <div class="checks" id="allergyChecks">
+          <label class="check"><input type="checkbox" value="milk"> Milk</label>
+          <label class="check"><input type="checkbox" value="egg"> Egg</label>
+          <label class="check"><input type="checkbox" value="peanut"> Peanut</label>
+          <label class="check"><input type="checkbox" value="tree_nuts"> Tree nuts</label>
+          <label class="check"><input type="checkbox" value="soy"> Soy</label>
+          <label class="check"><input type="checkbox" value="wheat"> Wheat</label>
+          <label class="check"><input type="checkbox" value="sesame"> Sesame</label>
+          <label class="check"><input type="checkbox" value="fish"> Fish</label>
+          <label class="check"><input type="checkbox" value="shellfish"> Shellfish</label>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <label for="customAvoid">Other ingredients to avoid (comma-separated)</label>
+          <input id="customAvoid" type="text" placeholder="e.g. gelatin, alcohol, pork" />
+        </div>
+      </article>
+
+      <article class="card">
+        <h2><span class="step">2</span>Scan or enter a barcode</h2>
+
+        <div class="field">
+          <label for="barcode">Barcode / GTIN</label>
+          <input id="barcode" type="text" inputmode="numeric" placeholder="e.g. 8801234567890" />
+        </div>
+
+        <div class="row">
+          <button id="lookupBtn">Look up product</button>
+          <button id="clearBarcodeBtn" class="secondary">Clear</button>
+        </div>
+
+        <p id="productInfo" class="small" style="margin-top:12px">
+          Uses Open Food Facts when a barcode is available. If no product data is found, use the package photo below.
+        </p>
+      </article>
+
+      <article class="card full">
+        <h2><span class="step">3</span>Take a photo or upload the ingredient label</h2>
+
+        <div class="row">
+          <label class="file-label" for="imageInput">Take / choose photo</label>
+          <input id="imageInput" type="file" accept="image/*" capture="environment" multiple hidden />
+
+          <select id="ocrLang" style="width:auto; min-width:180px">
+            <option value="eng+kor">English + Korean</option>
+            <option value="eng">English</option>
+            <option value="kor">Korean</option>
+            <option value="eng+fas">English + Persian</option>
+            <option value="eng+ara">English + Arabic</option>
+            <option value="eng+jpn">English + Japanese</option>
+            <option value="eng+chi_sim">English + Chinese</option>
+          </select>
+
+          <button id="ocrBtn" disabled>Run OCR</button>
+        </div>
+
+        <div class="preview" id="preview">
+          <span class="small">Package label preview</span>
+        </div>
+
+        <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+        <div id="ocrProgressText" class="small" style="margin-top:6px"></div>
+
+        <div class="field" style="margin-top:14px">
+          <label for="labelText">Recognized / corrected ingredient text</label>
+          <textarea id="labelText" placeholder="OCR text or ingredients will appear here. You can correct the text before analysis."></textarea>
+        </div>
+
+        <div class="row">
+          <button id="analyzeBtn">Analyze for my profile</button>
+          <button id="clearTextBtn" class="secondary">Clear text</button>
+        </div>
+
+        <div id="result" class="status"></div>
+      </article>
+
+      <article class="card full">
+        <h2>How this MVP decides</h2>
+        <p class="small">
+          ALLER-AI does not ask an LLM to decide whether a product is safe. It normalizes multilingual
+          ingredient terms, maps known derivatives to allergen groups, checks precautionary phrases such
+          as “may contain,” and then applies deterministic rules.
+        </p>
+        <div id="kbSummary"></div>
+      </article>
+    </section>
+
+    <p class="footnote">
+      Research/demo prototype only. Ingredient labels can be incomplete, OCR can be wrong, formulations can change,
+      and cross-contact risks may not be fully represented. For severe allergies, verify the original package label
+      and manufacturer information.
+    </p>
+  </main>
+
+<script>
+/* ============================================================
+   ALLER-AI single-file MVP
+   - Camera/photo input
+   - OCR with Tesseract.js
+   - Optional barcode lookup via Open Food Facts
+   - Multilingual ingredient normalization
+   - Deterministic allergy decision engine
+   ============================================================ */
+
+const KB = {
+  milk: {
+    label: "Milk",
+    direct: [
+      "milk","dairy","우유","유제품","유지방","유크림","분유","전지분유","탈지분유",
+      "شیر","لبنیات","حليب","ألبان","牛乳","乳製品","牛奶","乳制品",
+      "lait","milch","leche"
+    ],
+    derived: [
+      "whey","whey powder","whey protein","casein","caseinate","sodium caseinate",
+      "calcium caseinate","milk powder","skim milk powder","whole milk powder",
+      "butter","buttermilk","cream","cheese","yogurt",
+      "유청","유청분말","유청단백","카제인","카제인나트륨","버터","크림","치즈","요거트"
+    ]
+  },
+  egg: {
+    label: "Egg",
+    direct: ["egg","eggs","계란","달걀","난류","تخم مرغ","بيض","卵","たまご","鸡蛋","雞蛋","oeuf","ei","huevo"],
+    derived: ["egg white","egg yolk","albumen","ovalbumin","난백","난황","알부민"]
+  },
+  peanut: {
+    label: "Peanut",
+    direct: ["peanut","peanuts","groundnut","땅콩","بادام زمینی","فول سوداني","落花生","ピーナッツ","花生","cacahuète","erdnuss","cacahuete"],
+    derived: ["peanut flour","peanut powder","peanut butter","땅콩분말","땅콩버터"]
+  },
+  tree_nuts: {
+    label: "Tree nuts",
+    direct: [
+      "almond","walnut","cashew","pistachio","hazelnut","pecan","macadamia","brazil nut",
+      "아몬드","호두","캐슈넛","피스타치오","헤이즐넛","피칸","마카다미아",
+      "بادام","گردو","پسته","فندق","کاجو",
+      "اللوز","الجوز","الفستق","البندق","الكاجو",
+      "アーモンド","くるみ","カシューナッツ","ピスタチオ","杏仁","核桃","腰果","开心果"
+    ],
+    derived: []
+  },
+  soy: {
+    label: "Soy",
+    direct: ["soy","soya","soybean","대두","콩","سویا","فول الصويا","大豆","黄豆","大豆","soja"],
+    derived: ["soy lecithin","soya lecithin","soy protein","soy flour","대두레시틴","대두단백","콩가루"]
+  },
+  wheat: {
+    label: "Wheat",
+    direct: ["wheat","밀","소맥","گندم","قمح","小麦","小麥","小麦","blé","weizen","trigo"],
+    derived: ["wheat flour","flour (wheat)","밀가루","소맥분","gluten","글루텐"]
+  },
+  sesame: {
+    label: "Sesame",
+    direct: ["sesame","sesame seed","참깨","깨","کنجد","سمسم","ごま","芝麻","sésame","sesam","sésamo"],
+    derived: ["tahini","참기름","sesame oil","ارده","طحينة"]
+  },
+  fish: {
+    label: "Fish",
+    direct: ["fish","생선","어류","ماهی","سمك","魚","鱼","poisson","fisch","pescado"],
+    derived: ["anchovy","tuna","salmon","cod","멸치","참치","연어","대구"]
+  },
+  shellfish: {
+    label: "Shellfish",
+    direct: [
+      "shrimp","prawn","crab","lobster","shellfish","crustacean",
+      "새우","게","랍스터","갑각류",
+      "میگو","خرچنگ","روبيان","جمبري","سرطان البحر",
+      "えび","かに","エビ","カニ","虾","蝦","蟹"
+    ],
+    derived: []
+  }
+};
+
+const MAY_CONTAIN_PATTERNS = [
+  "may contain", "may contain traces", "traces of", "processed in a facility",
+  "manufactured in a facility", "made in a facility", "shared equipment",
+  "함유 가능", "혼입 가능", "같은 제조시설", "동일 제조시설", "같은 설비",
+  "ممکن است حاوی", "آثار", "قد يحتوي", "قد يحتوي على آثار",
+  "含む可能性", "同一工場", "可能含有", "可能含有微量"
+];
+
+const els = {
+  imageInput: document.getElementById("imageInput"),
+  preview: document.getElementById("preview"),
+  ocrBtn: document.getElementById("ocrBtn"),
+  ocrLang: document.getElementById("ocrLang"),
+  labelText: document.getElementById("labelText"),
+  analyzeBtn: document.getElementById("analyzeBtn"),
+  result: document.getElementById("result"),
+  progress: document.getElementById("progress"),
+  bar: document.getElementById("bar"),
+  ocrProgressText: document.getElementById("ocrProgressText"),
+  barcode: document.getElementById("barcode"),
+  lookupBtn: document.getElementById("lookupBtn"),
+  productInfo: document.getElementById("productInfo"),
+  customAvoid: document.getElementById("customAvoid"),
+};
+
+let selectedFiles = [];
+let lastOcrConfidence = null;
+
+function normalize(s) {
+  return (s || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[()[\]{}]/g, " ")
+    .replace(/[,:;|/\\]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function selectedAllergens() {
+  return [...document.querySelectorAll("#allergyChecks input:checked")].map(x => x.value);
+}
+
+function findAllOccurrences(text, term) {
+  const t = normalize(text);
+  const q = normalize(term);
+  if (!q || q.length < 2) return false;
+  return t.includes(q);
+}
+
+function inMayContainContext(rawText, term) {
+  const text = normalize(rawText);
+  const q = normalize(term);
+  let idx = text.indexOf(q);
+  while (idx >= 0) {
+    const start = Math.max(0, idx - 90);
+    const context = text.slice(start, idx + q.length + 15);
+    if (MAY_CONTAIN_PATTERNS.some(p => context.includes(normalize(p)))) return true;
+    idx = text.indexOf(q, idx + 1);
+  }
+  return false;
+}
+
+function analyzeText(rawText) {
+  const profile = selectedAllergens();
+  const customTerms = els.customAvoid.value
+    .split(",")
+    .map(x => normalize(x))
+    .filter(Boolean);
+
+  if (!profile.length && !customTerms.length) {
+    return {
+      verdict: "unknown",
+      title: "SELECT YOUR PROFILE",
+      message: "Choose at least one allergen or enter another ingredient to avoid.",
+      direct: [], caution: []
+    };
+  }
+
+  const direct = [];
+  const caution = [];
+
+  for (const allergenId of profile) {
+    const item = KB[allergenId];
+    if (!item) continue;
+
+    for (const term of [...item.direct, ...item.derived]) {
+      if (!findAllOccurrences(rawText, term)) continue;
+
+      const match = {
+        allergen: item.label,
+        term,
+        relation: item.derived.includes(term) ? "derived ingredient" : "direct term"
+      };
+
+      if (inMayContainContext(rawText, term)) caution.push(match);
+      else direct.push(match);
+    }
+  }
+
+  for (const term of customTerms) {
+    if (findAllOccurrences(rawText, term)) {
+      const match = { allergen: "Custom avoid", term, relation: "user-defined term" };
+      if (inMayContainContext(rawText, term)) caution.push(match);
+      else direct.push(match);
+    }
+  }
+
+  // Remove duplicates by allergen + normalized term
+  const dedupe = arr => [...new Map(arr.map(m => [`${m.allergen}|${normalize(m.term)}`, m])).values()];
+  const d = dedupe(direct);
+  const c = dedupe(caution);
+
+  if (d.length) {
+    return {
+      verdict: "avoid",
+      title: "AVOID",
+      message: "A listed ingredient conflicts with your selected profile.",
+      direct: d, caution: c
+    };
+  }
+
+  if (c.length) {
+    return {
+      verdict: "caution",
+      title: "CAUTION",
+      message: "The label contains a precautionary or possible cross-contact warning related to your profile.",
+      direct: d, caution: c
+    };
+  }
+
+  if (lastOcrConfidence !== null && lastOcrConfidence < 55) {
+    return {
+      verdict: "unknown",
+      title: "UNKNOWN — VERIFY LABEL",
+      message: `OCR confidence was low (${Math.round(lastOcrConfidence)}%). Please retake the photo or verify the original package label.`,
+      direct: [], caution: []
+    };
+  }
+
+  return {
+    verdict: "ok",
+    title: "NO LISTED CONFLICT DETECTED",
+    message: "No selected allergen term was detected in the available label text. This is not a guarantee that the product is safe.",
+    direct: [], caution: []
+  };
+}
+
+function renderResult(r) {
+  els.result.className = `status show ${r.verdict}`;
+  const matches = [...r.direct, ...r.caution];
+
+  let html = `<div class="status-title">${r.title}</div><div>${r.message}</div>`;
+  if (matches.length) {
+    html += `<ul class="match-list">`;
+    for (const m of matches) {
+      html += `<li><strong>${escapeHtml(m.allergen)}</strong>: matched “${escapeHtml(m.term)}” (${escapeHtml(m.relation)})</li>`;
+    }
+    html += `</ul>`;
+  }
+  els.result.innerHTML = html;
+  els.result.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[c]));
+}
+
+els.imageInput.addEventListener("change", async (e) => {
+  selectedFiles = [...e.target.files];
+  els.ocrBtn.disabled = !selectedFiles.length;
+  lastOcrConfidence = null;
+
+  if (!selectedFiles.length) return;
+
+  const first = selectedFiles[0];
+  const url = URL.createObjectURL(first);
+  els.preview.innerHTML = `<img id="previewImg" alt="Package label preview">`;
+  const img = document.getElementById("previewImg");
+  img.src = url;
+
+  img.onload = async () => {
+    // Try native barcode detection when supported.
+    try {
+      if ("BarcodeDetector" in window) {
+        const detector = new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e","code_128"]});
+        const codes = await detector.detect(img);
+        if (codes.length && !els.barcode.value) {
+          els.barcode.value = codes[0].rawValue;
+          els.productInfo.textContent = `Barcode detected from image: ${codes[0].rawValue}`;
+        }
+      }
+    } catch (_) {}
+  };
+});
+
+els.ocrBtn.addEventListener("click", async () => {
+  if (!selectedFiles.length) return;
+
+  els.ocrBtn.disabled = true;
+  els.progress.classList.add("show");
+  els.bar.style.width = "0%";
+  els.ocrProgressText.textContent = "Preparing OCR…";
+
+  let texts = [];
+  let confidences = [];
+
+  try {
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+
+      const result = await Tesseract.recognize(
+        file,
+        els.ocrLang.value,
+        {
+          logger: m => {
+            if (m.status === "recognizing text" && typeof m.progress === "number") {
+              const overall = ((i + m.progress) / selectedFiles.length) * 100;
+              els.bar.style.width = `${overall}%`;
+              els.ocrProgressText.textContent =
+                `OCR ${i+1}/${selectedFiles.length}: ${Math.round(m.progress * 100)}%`;
+            } else if (m.status) {
+              els.ocrProgressText.textContent = m.status;
+            }
+          }
+        }
+      );
+
+      texts.push(result.data.text || "");
+      if (Number.isFinite(result.data.confidence)) confidences.push(result.data.confidence);
+    }
+
+    els.labelText.value = texts.join("\n\n");
+    lastOcrConfidence = confidences.length
+      ? confidences.reduce((a,b) => a+b, 0) / confidences.length
+      : null;
+
+    els.bar.style.width = "100%";
+    els.ocrProgressText.textContent =
+      `OCR complete${lastOcrConfidence !== null ? ` • confidence ${Math.round(lastOcrConfidence)}%` : ""}. Review the text, then analyze.`;
+  } catch (err) {
+    console.error(err);
+    els.ocrProgressText.textContent =
+      "OCR failed. You can still paste or type the ingredient list manually.";
+  } finally {
+    els.ocrBtn.disabled = false;
+  }
+});
+
+els.analyzeBtn.addEventListener("click", () => {
+  const text = els.labelText.value.trim();
+  if (!text) {
+    renderResult({
+      verdict:"unknown",
+      title:"UNKNOWN — VERIFY LABEL",
+      message:"No ingredient text is available yet. Take a photo, run OCR, scan a barcode, or paste the label text.",
+      direct:[], caution:[]
+    });
+    return;
+  }
+  renderResult(analyzeText(text));
+});
+
+els.lookupBtn.addEventListener("click", async () => {
+  const code = els.barcode.value.trim();
+  if (!code) {
+    els.productInfo.textContent = "Enter a barcode first.";
+    return;
+  }
+
+  els.lookupBtn.disabled = true;
+  els.productInfo.textContent = "Looking up product…";
+
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (!data.product) {
+      els.productInfo.textContent = "Product not found. Use a package photo instead.";
+      return;
+    }
+
+    const p = data.product;
+    const name = p.product_name || p.product_name_en || "Unnamed product";
+    const brand = Array.isArray(p.brands_tags) ? p.brands_tags.join(", ") : (p.brands || "");
+    const ingredients = p.ingredients_text || p.ingredients_text_en || "";
+    const allergens = p.allergens || "";
+    const traces = p.traces || "";
+
+    els.productInfo.innerHTML =
+      `<strong>${escapeHtml(name)}</strong>${brand ? ` • ${escapeHtml(brand)}` : ""}<br>` +
+      `<span class="small">Open Food Facts data loaded.</span>`;
+
+    const merged = [
+      ingredients ? `Ingredients: ${ingredients}` : "",
+      allergens ? `Allergens: ${allergens}` : "",
+      traces ? `May contain / traces: ${traces}` : ""
+    ].filter(Boolean).join("\n");
+
+    if (merged) {
+      els.labelText.value = merged;
+      lastOcrConfidence = null;
+    } else {
+      els.productInfo.innerHTML += `<br><span class="small">No ingredient text available for this barcode; use a photo.</span>`;
+    }
+  } catch (err) {
+    console.error(err);
+    els.productInfo.textContent = "Barcode lookup failed. Use a package photo or try again.";
+  } finally {
+    els.lookupBtn.disabled = false;
+  }
+});
+
+document.getElementById("clearBarcodeBtn").addEventListener("click", () => {
+  els.barcode.value = "";
+  els.productInfo.textContent =
+    "Uses Open Food Facts when a barcode is available. If no product data is found, use the package photo below.";
+});
+
+document.getElementById("clearTextBtn").addEventListener("click", () => {
+  els.labelText.value = "";
+  els.result.className = "status";
+  lastOcrConfidence = null;
+});
+
+(function renderKbSummary() {
+  const el = document.getElementById("kbSummary");
+  const labels = Object.values(KB).map(x => x.label);
+  el.innerHTML = labels.map(x => `<span class="pill">${escapeHtml(x)}</span>`).join("");
+})();
+</script>
+</body>
+</html>
