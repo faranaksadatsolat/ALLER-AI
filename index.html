@@ -611,7 +611,10 @@
        "reason": "Sodium caseinate is milk-derived."
      }
      ============================================================ */
-  const API_ENDPOINT = ""; // e.g. "https://api.yourdomain.com/v1/analyze"
+  const API_ENDPOINT =
+    location.hostname === "127.0.0.1" || location.hostname === "localhost"
+      ? "http://127.0.0.1:8000/v1/analyze"
+      : ""; // After Render deploy, paste the HTTPS /v1/analyze URL here.
 
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
