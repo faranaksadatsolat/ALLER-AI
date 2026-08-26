@@ -49,11 +49,15 @@ ENGINE_CONFIG = {
 PRIMARY_ENGINES = ["korean", "latin"]
 FALLBACK_ENGINES = ["arabic", "cyrillic", "devanagari", "japanese", "chinese", "thai", "greek", "tamil", "telugu"]
 
-app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.0")
+app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
+    allow_origins=[
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "https://faranaksadatsolat.github.io",
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -665,8 +669,8 @@ def health():
     return {
         "ok": True,
         "engine": "PaddleOCR PP-OCRv5 multilingual router",
-        "mode": "local-free",
-        "version": "0.9.0",
+        "mode": "local-or-cloud",
+        "version": "0.9.1",
         "language_selection_required": False,
         "primary_ocr_families": PRIMARY_ENGINES,
         "fallback_ocr_families": FALLBACK_ENGINES,
