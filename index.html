@@ -52,7 +52,16 @@
 (()=>{
 const IS_LOCAL=location.hostname==="127.0.0.1"||location.hostname==="localhost";
 const PUBLIC_API_BASE="https://aller-ai.onrender.com";
-const API=(IS_LOCAL?"":PUBLIC_API_BASE)+"/api/analyze",MAX_PRODUCTS=6,MAX_PHOTOS=3;
+const API_BASE=IS_LOCAL?"":PUBLIC_API_BASE;
+const API=API_BASE+"/api/analyze",HEALTH=API_BASE+"/api/health",MAX_PRODUCTS=6,MAX_PHOTOS=3;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function wakeBackend(){
+  try{
+    const r=await fetch(HEALTH,{method:"GET",cache:"no-store"});
+    return r.ok;
+  }catch(_){return false}
+}
+
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const lang=$("#lang"),productsEl=$("#products"),analyze=$("#analyze"),result=$("#result"),loading=$("#loading"),productResults=$("#productResults"),calTotal=$("#calTotal");
 let custom=[],products=[{id:1,photos:[]}],nextId=2;
@@ -261,16 +270,43 @@ analyze.onclick=async()=>{
   const p=profile();if(!(p.allergens.length||p.custom_avoid.length)){alert(t("noProfile"));return}
   const active=products.filter(x=>x.photos.length);if(!active.length){alert(t("addPhoto"));return}
   result.classList.remove("show");loading.classList.add("show");
-  const form=new FormData();form.append("profile",JSON.stringify(p));
-  active.forEach((prod,idx)=>prod.photos.forEach(photo=>{form.append("images",photo.file,photo.file.name);form.append("product_ids",String(idx+1))}));
-  try{
-    const r=await fetch(API,{method:"POST",body:form});let d={};try{d=await r.json()}catch(_){}
-    if(!r.ok||d.status==="backend_error"){loading.classList.remove("show");alert(d.detail||d.message||("HTTP "+r.status));return}
-    showResults(d)
-  }catch(e){loading.classList.remove("show");alert(t("serverTitle")+"\n"+t("serverBody"))}
+
+  // Wake a sleeping Render instance before uploading photos.
+  if(!IS_LOCAL)await wakeBackend();
+
+  const makeForm=()=>{
+    const form=new FormData();form.append("profile",JSON.stringify(p));
+    active.forEach((prod,idx)=>prod.photos.forEach(photo=>{
+      form.append("images",photo.file,photo.file.name);
+      form.append("product_ids",String(idx+1));
+    }));
+    return form;
+  };
+
+  let lastError=null;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const r=await fetch(API,{method:"POST",body:makeForm()});
+      let d={};try{d=await r.json()}catch(_){}
+      if(r.ok&&d.status!=="backend_error"){showResults(d);return}
+      lastError=new Error(d.detail||d.message||("HTTP "+r.status));
+      // A transient 5xx can happen while a free instance finishes model startup.
+      if(attempt===0&&r.status>=500){await sleep(5000);continue}
+      loading.classList.remove("show");alert(lastError.message);return;
+    }catch(e){
+      lastError=e;
+      if(attempt===0){
+        await sleep(5000);
+        await wakeBackend();
+        continue;
+      }
+    }
+  }
+  loading.classList.remove("show");
+  alert(t("serverTitle")+"\n"+t("serverBody"));
 };
 
-renderCustom();setLang(lang.value);renderProducts();update();
+renderCustom();setLang(lang.value);renderProducts();update();if(!IS_LOCAL)wakeBackend();
 })();
 </script>
 </body>

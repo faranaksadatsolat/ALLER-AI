@@ -35,22 +35,22 @@ MARKERS = ONTOLOGY["label_markers"]
 # Two high-probability passes first. Other scripts are lazy fallbacks.
 # The user never selects the package language.
 ENGINE_CONFIG = {
-    "korean":    {"lang": "korean", "label": "Korean + English"},
-    "latin":     {"lang": "fr",     "label": "Latin multilingual"},
-    "arabic":    {"lang": "fa",     "label": "Arabic / Persian / Urdu family"},
-    "cyrillic":  {"lang": "ru",     "label": "Cyrillic family"},
-    "devanagari":{"lang": "hi",     "label": "Devanagari family"},
-    "japanese":  {"lang": "japan",  "label": "Japanese"},
-    "chinese":   {"lang": "ch",     "label": "Chinese + English"},
-    "thai":      {"lang": "th",     "label": "Thai + English"},
-    "greek":     {"lang": "el",     "label": "Greek + English"},
-    "tamil":     {"lang": "ta",     "label": "Tamil + English"},
-    "telugu":    {"lang": "te",     "label": "Telugu + English"},
+    "korean":    {"rec_model": "korean_PP-OCRv5_mobile_rec",    "label": "Korean + English"},
+    "latin":     {"rec_model": "latin_PP-OCRv5_mobile_rec",     "label": "Latin multilingual"},
+    "arabic":    {"rec_model": "arabic_PP-OCRv5_mobile_rec",    "label": "Arabic / Persian / Urdu family"},
+    "cyrillic":  {"rec_model": "cyrillic_PP-OCRv5_mobile_rec",  "label": "Cyrillic family"},
+    "devanagari":{"rec_model": "devanagari_PP-OCRv5_mobile_rec","label": "Devanagari family"},
+    "japanese":  {"rec_model": "PP-OCRv5_mobile_rec",           "label": "Japanese"},
+    "chinese":   {"rec_model": "PP-OCRv5_mobile_rec",           "label": "Chinese + English"},
+    "thai":      {"rec_model": "th_PP-OCRv5_mobile_rec",        "label": "Thai + English"},
+    "greek":     {"rec_model": "el_PP-OCRv5_mobile_rec",        "label": "Greek + English"},
+    "tamil":     {"rec_model": "ta_PP-OCRv5_mobile_rec",        "label": "Tamil + English"},
+    "telugu":    {"rec_model": "te_PP-OCRv5_mobile_rec",        "label": "Telugu + English"},
 }
 PRIMARY_ENGINES = ["korean", "latin"]
 FALLBACK_ENGINES = ["arabic", "cyrillic", "devanagari", "japanese", "chinese", "thai", "greek", "tamil", "telugu"]
 
-app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.2")
+app = FastAPI(title="ALLER AI Multilingual OCR API", version="0.9.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,25 +64,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_PRIMARY_CACHE: dict[str, PaddleOCR] = {}
+_ACTIVE_ENGINE_KEY: str | None = None
+_ACTIVE_ENGINE: PaddleOCR | None = None
 
 def make_engine(engine_key: str) -> PaddleOCR:
     cfg = ENGINE_CONFIG[engine_key]
     return PaddleOCR(
-        lang=cfg["lang"],
-        ocr_version="PP-OCRv5",
         text_detection_model_name="PP-OCRv5_mobile_det",
+        text_recognition_model_name=cfg["rec_model"],
         device="cpu",
         enable_mkldnn=False,
         use_doc_orientation_classify=False,
         use_doc_unwarping=False,
         use_textline_orientation=False,
+        text_recognition_batch_size=1,
     )
 
+def clear_active_engine() -> None:
+    global _ACTIVE_ENGINE_KEY, _ACTIVE_ENGINE
+    if _ACTIVE_ENGINE is not None:
+        _ACTIVE_ENGINE = None
+        _ACTIVE_ENGINE_KEY = None
+        gc.collect()
+
 def get_primary_engine(engine_key: str) -> PaddleOCR:
-    if engine_key not in _PRIMARY_CACHE:
-        _PRIMARY_CACHE[engine_key] = make_engine(engine_key)
-    return _PRIMARY_CACHE[engine_key]
+    """
+    Keep only ONE PaddleOCR pipeline resident at a time.
+
+    Render Free has tight memory. Korean and Latin are still both checked,
+    but sequentially instead of keeping duplicate detector/recognizer
+    pipelines resident simultaneously.
+    """
+    global _ACTIVE_ENGINE_KEY, _ACTIVE_ENGINE
+    if _ACTIVE_ENGINE is None or _ACTIVE_ENGINE_KEY != engine_key:
+        clear_active_engine()
+        _ACTIVE_ENGINE = make_engine(engine_key)
+        _ACTIVE_ENGINE_KEY = engine_key
+    return _ACTIVE_ENGINE
 
 def normalize_arabic_persian(s: str) -> str:
     table = str.maketrans({
@@ -670,9 +688,9 @@ def home():
 def health():
     return {
         "ok": True,
-        "engine": "PaddleOCR PP-OCRv5 mobile-det multilingual router",
+        "engine": "PaddleOCR PP-OCRv5 explicit-mobile multilingual router",
         "mode": "local-or-cloud",
-        "version": "0.9.2",
+        "version": "0.9.3",
         "language_selection_required": False,
         "primary_ocr_families": PRIMARY_ENGINES,
         "fallback_ocr_families": FALLBACK_ENGINES,
@@ -738,11 +756,18 @@ async def analyze(
         unresolved = set()
         for pid in grouped:
             direct, caution = scan_profile(sources[pid], p)
-            if not direct and not caution:
+            evidence = label_evidence(sources[pid])
+            # If Korean/Latin OCR has already confirmed an ingredient list,
+            # the script is sufficiently resolved for a conservative negative.
+            # Only unknown/unconfirmed labels enter the expensive fallback router.
+            if not direct and not caution and not evidence["ingredient"]:
                 unresolved.add(pid)
 
         # Stage 2: automatic script-family fallbacks. No language choice is shown to the user.
         # A negative result is only returned after all fallback families have been attempted.
+        if unresolved:
+            clear_active_engine()
+
         for engine_key in FALLBACK_ENGINES:
             if not unresolved:
                 break
@@ -773,9 +798,12 @@ async def analyze(
             del engine
             gc.collect()
 
-        # Nutrition-only recovery: retry difficult labels at larger scale.
+        # Nutrition-only recovery: retry difficult labels at larger scale,
+        # but only when a nutrition panel was actually detected.
         for pid in sorted(grouped):
             if extract_best_calories(calorie_sources[pid]).get("package_kcal") is not None:
+                continue
+            if not label_evidence(sources[pid])["nutrition"]:
                 continue
 
             enhanced_paths = make_nutrition_variants(grouped[pid])
@@ -831,6 +859,9 @@ async def analyze(
             "message": f"{type(exc).__name__}: {str(exc)[:700]}",
         }
     finally:
+        # Release Paddle predictors after each request. Model files remain cached
+        # for the lifetime of the Render instance, but RAM is returned.
+        clear_active_engine()
         for path in temp_paths:
             try:
                 os.remove(path)
