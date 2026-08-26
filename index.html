@@ -51,7 +51,7 @@
 <script>
 (()=>{
 const IS_LOCAL=location.hostname==="127.0.0.1"||location.hostname==="localhost";
-const PUBLIC_API_BASE="https://aller-ai-api-faranaksadatsolat.onrender.com";
+const PUBLIC_API_BASE="https://aller-ai.onrender.com";
 const API=(IS_LOCAL?"":PUBLIC_API_BASE)+"/api/analyze",MAX_PRODUCTS=6,MAX_PHOTOS=3;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const lang=$("#lang"),productsEl=$("#products"),analyze=$("#analyze"),result=$("#result"),loading=$("#loading"),productResults=$("#productResults"),calTotal=$("#calTotal");
