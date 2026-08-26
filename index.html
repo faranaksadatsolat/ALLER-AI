@@ -1,779 +1,1062 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#111827" />
-  <title>ALLER-AI | Smart Packaged Food Allergy Assistant</title>
-
-  <!-- OCR: loaded only when the user runs OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="color-scheme" content="light" />
+  <title>ALLER AI — Understand the label before you eat</title>
+  <meta name="description" content="A multilingual packaged-food assistant that checks ingredient labels against your allergy profile." />
 
   <style>
-    :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --primary: #111827;
-      --accent: #2563eb;
-      --danger: #b91c1c;
-      --danger-bg: #fef2f2;
-      --warn: #92400e;
-      --warn-bg: #fffbeb;
-      --ok: #166534;
-      --ok-bg: #f0fdf4;
-      --unknown: #475569;
-      --unknown-bg: #f8fafc;
-      --radius: 18px;
-      --shadow: 0 10px 35px rgba(17,24,39,.07);
+    :root{
+      --ink:#0b1220;
+      --ink-2:#172033;
+      --muted:#667085;
+      --muted-2:#98a2b3;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e7eaf0;
+      --brand:#4169e1;
+      --brand-soft:#eef2ff;
+      --brand-ink:#243b8a;
+      --danger:#b42318;
+      --danger-bg:#fff2f0;
+      --warn:#a15c00;
+      --warn-bg:#fff8e8;
+      --ok:#146c43;
+      --ok-bg:#edf9f2;
+      --shadow:0 16px 50px rgba(16,24,40,.08);
+      --radius-xl:28px;
+      --radius-lg:20px;
+      --radius-md:14px;
+      --max:760px;
     }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 12% -10%, rgba(65,105,225,.12), transparent 33%),
+        linear-gradient(180deg,#fbfcff 0,#f7f8fb 40%,#f7f8fb 100%);
+      color:var(--ink);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                  "Noto Sans KR", "Noto Sans Arabic", Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
 
-    .wrap {
-      width: min(1120px, calc(100% - 28px));
-      margin: 0 auto;
-      padding: 26px 0 60px;
+    button,input,select{font:inherit}
+    button{-webkit-tap-highlight-color:transparent}
+
+    .app{
+      width:min(var(--max), calc(100% - 28px));
+      margin:0 auto;
+      padding:22px 0 calc(44px + env(safe-area-inset-bottom));
     }
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 20px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:20px;
     }
 
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: var(--primary);
-      color: white;
-      font-weight: 800;
-      letter-spacing: .5px;
-    }
-    h1 { font-size: clamp(24px, 3vw, 36px); margin: 0; }
-    .subtitle { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
-
-    .badge {
-      border: 1px solid var(--line);
-      background: white;
-      border-radius: 999px;
-      padding: 8px 12px;
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
+    .mark{
+      width:48px;height:48px;
+      display:grid;place-items:center;
+      border-radius:16px;
+      background:var(--ink);
+      color:#fff;
+      font-weight:850;
+      letter-spacing:-.05em;
+      box-shadow:0 8px 20px rgba(11,18,32,.14);
+      flex:0 0 auto;
     }
 
-    @media (max-width: 820px) {
-      .grid { grid-template-columns: 1fr; }
-      header { align-items: flex-start; flex-direction: column; }
+    .brand-copy{min-width:0}
+    .brand-name{
+      font-size:21px;
+      line-height:1.05;
+      font-weight:850;
+      letter-spacing:-.03em;
+    }
+    .brand-tag{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px;
+    .lang{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.88);
+      border-radius:12px;
+      padding:8px 10px;
+      color:var(--ink-2);
+      outline:none;
     }
 
-    .card h2 {
-      font-size: 17px;
-      margin: 0 0 14px;
+    .hero{
+      padding:26px 6px 22px;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      color:var(--brand-ink);
+      background:var(--brand-soft);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      font-weight:750;
+      margin-bottom:13px;
+    }
+    .hero h1{
+      margin:0;
+      font-size:clamp(32px,8vw,52px);
+      line-height:1.04;
+      letter-spacing:-.045em;
+      max-width:650px;
+    }
+    .hero p{
+      color:var(--muted);
+      margin:13px 0 0;
+      line-height:1.65;
+      font-size:15px;
+      max-width:630px;
     }
 
-    .step {
-      display: inline-grid;
-      place-items: center;
-      width: 28px;
-      height: 28px;
-      margin-right: 8px;
-      border-radius: 50%;
-      background: #eef2ff;
-      color: #3730a3;
-      font-size: 13px;
-      font-weight: 700;
+    .stack{display:grid;gap:16px}
+
+    .card{
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(231,234,240,.95);
+      border-radius:var(--radius-xl);
+      padding:22px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
     }
 
-    .small { color: var(--muted); font-size: 12px; line-height: 1.5; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-
-    button, .file-label {
-      appearance: none;
-      border: 0;
-      border-radius: 12px;
-      padding: 11px 14px;
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      font-size: 14px;
+    .section-head{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .num{
+      width:32px;height:32px;
+      border-radius:11px;
+      display:grid;place-items:center;
+      background:var(--brand-soft);
+      color:var(--brand-ink);
+      font-weight:850;
+      flex:0 0 auto;
+    }
+    .section-head h2{
+      margin:1px 0 3px;
+      font-size:19px;
+      letter-spacing:-.02em;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
     }
 
-    button.secondary, .file-label.secondary {
-      background: #eef2f7;
-      color: #111827;
-      border: 1px solid var(--line);
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+    }
+    .chip{
+      position:relative;
+    }
+    .chip input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .chip span{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      min-height:42px;
+      padding:9px 13px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      color:#344054;
+      font-size:14px;
+      font-weight:650;
+      cursor:pointer;
+      transition:.16s ease;
+      user-select:none;
+    }
+    .chip span::before{
+      content:"";
+      width:16px;height:16px;
+      border:1.5px solid #cbd2dc;
+      border-radius:50%;
+      transition:.16s ease;
+    }
+    .chip input:checked + span{
+      border-color:#9db1ff;
+      background:var(--brand-soft);
+      color:var(--brand-ink);
+    }
+    .chip input:checked + span::before{
+      border:5px solid var(--brand);
+      background:#fff;
     }
 
-    button:disabled { opacity: .5; cursor: not-allowed; }
+    .custom-row{
+      display:flex;
+      gap:9px;
+      margin-top:13px;
+    }
+    .text-input{
+      flex:1;
+      min-width:0;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      border-radius:14px;
+      padding:12px 13px;
+      outline:none;
+    }
+    .text-input:focus{border-color:#9db1ff;box-shadow:0 0 0 3px rgba(65,105,225,.10)}
 
-    input[type="text"], input[type="number"], select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--text);
-      padding: 11px 12px;
-      font: inherit;
-      outline: none;
+    .btn{
+      border:0;
+      border-radius:14px;
+      min-height:46px;
+      padding:11px 15px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .08s ease, opacity .15s ease, background .15s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn-primary{background:var(--ink);color:#fff}
+    .btn-soft{background:#f0f2f6;color:var(--ink)}
+    .btn-brand{background:var(--brand);color:#fff}
+    .btn-wide{width:100%;min-height:54px;font-size:16px;border-radius:17px}
+
+    .capture{
+      border:1.5px dashed #cfd6e2;
+      border-radius:22px;
+      background:linear-gradient(180deg,#fcfdff,#f8f9fc);
+      min-height:240px;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding:24px;
+      overflow:hidden;
+    }
+    .capture-inner{max-width:430px}
+    .camera-icon{
+      width:62px;height:62px;
+      border-radius:20px;
+      display:grid;place-items:center;
+      margin:0 auto 13px;
+      background:var(--brand-soft);
+      color:var(--brand-ink);
+    }
+    .capture h3{
+      margin:0;
+      font-size:19px;
+      letter-spacing:-.02em;
+    }
+    .capture p{
+      margin:7px 0 15px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
     }
 
-    textarea {
-      min-height: 150px;
-      resize: vertical;
-      line-height: 1.45;
+    .photo-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    @media(max-width:540px){.photo-grid{grid-template-columns:1fr 1fr}}
+    .photo-card{
+      position:relative;
+      aspect-ratio:4/3;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#f2f4f7;
+    }
+    .photo-card img{
+      width:100%;height:100%;object-fit:cover;display:block;
+    }
+    .photo-card .remove{
+      position:absolute;
+      top:7px;right:7px;
+      width:30px;height:30px;
+      border:0;border-radius:50%;
+      background:rgba(11,18,32,.82);
+      color:#fff;
+      cursor:pointer;
+      font-size:18px;
+      line-height:1;
+    }
+    .photo-card .qbadge{
+      position:absolute;
+      left:7px;bottom:7px;
+      max-width:calc(100% - 14px);
+      background:rgba(255,255,255,.92);
+      color:#344054;
+      border-radius:999px;
+      padding:5px 8px;
+      font-size:10px;
+      font-weight:750;
+      box-shadow:0 2px 9px rgba(16,24,40,.12);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .qbadge.bad{color:var(--danger)}
+    .qbadge.good{color:var(--ok)}
+
+    .tips{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-top:13px;
+    }
+    @media(max-width:540px){.tips{grid-template-columns:1fr}}
+    .tip{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:13px;
+      padding:10px 11px;
+      color:#475467;
+      font-size:12px;
+      line-height:1.45;
     }
 
-    input:focus, select:focus, textarea:focus {
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+    .action-area{
+      margin-top:16px;
+    }
+    .action-note{
+      text-align:center;
+      color:var(--muted);
+      font-size:11px;
+      margin-top:8px;
+      line-height:1.5;
     }
 
-    .field { margin-bottom: 13px; }
-    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-
-    .checks {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 8px;
+    .analysis{
+      display:none;
+      text-align:center;
+      padding:28px 14px 6px;
     }
-    @media (max-width: 520px) { .checks { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-
-    .check {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
+    .analysis.show{display:block}
+    .spinner{
+      width:42px;height:42px;
+      margin:0 auto 13px;
+      border-radius:50%;
+      border:4px solid #e8ecf7;
+      border-top-color:var(--brand);
+      animation:spin .8s linear infinite;
     }
-    .check input { margin: 0; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .analysis strong{display:block;font-size:17px}
+    .analysis span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
 
-    .preview {
-      min-height: 160px;
-      border: 1px dashed #cbd5e1;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      background: #fafafa;
-      margin: 12px 0;
+    .result{
+      display:none;
+      border-radius:22px;
+      padding:19px;
+      margin-top:16px;
+      border:1px solid;
     }
+    .result.show{display:block}
+    .result.danger{background:var(--danger-bg);border-color:#f7c9c4;color:var(--danger)}
+    .result.warn{background:var(--warn-bg);border-color:#f3d69a;color:var(--warn)}
+    .result.ok{background:var(--ok-bg);border-color:#bfe6ce;color:var(--ok)}
+    .result.neutral{background:#f8fafc;border-color:#dbe1ea;color:#344054}
 
-    .preview img {
-      max-width: 100%;
-      max-height: 330px;
-      display: block;
+    .result-top{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
     }
-
-    .status {
-      display: none;
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 14px;
-      border: 1px solid;
+    .result-icon{
+      width:42px;height:42px;
+      border-radius:14px;
+      display:grid;place-items:center;
+      background:rgba(255,255,255,.75);
+      flex:0 0 auto;
+      font-weight:900;
     }
-
-    .status.show { display: block; }
-    .status.avoid { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
-    .status.caution { background: var(--warn-bg); border-color: #fde68a; color: var(--warn); }
-    .status.ok { background: var(--ok-bg); border-color: #bbf7d0; color: var(--ok); }
-    .status.unknown { background: var(--unknown-bg); border-color: #cbd5e1; color: var(--unknown); }
-
-    .status-title {
-      font-size: 20px;
-      font-weight: 850;
-      margin-bottom: 6px;
+    .result h3{
+      margin:1px 0 4px;
+      font-size:19px;
+      letter-spacing:-.02em;
     }
-
-    .match-list { margin: 10px 0 0; padding-left: 18px; line-height: 1.55; }
-    .progress {
-      height: 8px;
-      background: #e5e7eb;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 10px;
-      display: none;
+    .result p{
+      margin:0;
+      font-size:13px;
+      line-height:1.55;
     }
-    .progress.show { display: block; }
-    .bar { height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+    .evidence{
+      margin-top:14px;
+      border-top:1px solid rgba(0,0,0,.08);
+      padding-top:12px;
+      display:grid;
+      gap:8px;
+    }
+    .evidence-row{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      font-size:12px;
+    }
+    .evidence-row span:first-child{opacity:.75}
+    .evidence-row strong{text-align:right}
 
-    .pill {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 5px 9px;
-      margin: 3px 4px 3px 0;
-      font-size: 12px;
-      border: 1px solid var(--line);
-      background: #fff;
+    .privacy{
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.55;
+      margin-top:14px;
     }
 
-    .full { grid-column: 1 / -1; }
-    .footnote {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 11px;
-      text-align: center;
-      line-height: 1.5;
+    .footer{
+      padding:22px 5px 0;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.65;
+      text-align:center;
     }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .hidden{display:none!important}
+
+    /* RTL support for Persian */
+    html[dir="rtl"] .brand,
+    html[dir="rtl"] .section-head,
+    html[dir="rtl"] .result-top,
+    html[dir="rtl"] .privacy{flex-direction:row-reverse}
+    html[dir="rtl"] .section-head,
+    html[dir="rtl"] .result-top,
+    html[dir="rtl"] .privacy{text-align:right}
+    html[dir="rtl"] .hero{text-align:right}
+    html[dir="rtl"] .evidence-row strong{text-align:left}
   </style>
 </head>
 
 <body>
-  <main class="wrap">
-    <header>
+  <main class="app">
+    <header class="topbar">
       <div class="brand">
-        <div class="logo">알러</div>
-        <div>
-          <h1>ALLER-AI</h1>
-          <p class="subtitle">Multilingual packaged-food ingredient & allergy assistant</p>
+        <div class="mark">알러</div>
+        <div class="brand-copy">
+          <div class="brand-name">ALLER AI</div>
+          <div class="brand-tag" data-i18n="tagline">Understand the label before you eat.</div>
         </div>
       </div>
-      <div class="badge">Single-page MVP • GitHub Pages ready</div>
+
+      <select id="uiLang" class="lang" aria-label="Language">
+        <option value="en">EN</option>
+        <option value="ko">한국어</option>
+        <option value="fa">فارسی</option>
+      </select>
     </header>
 
-    <section class="grid">
-      <article class="card">
-        <h2><span class="step">1</span>Your profile</h2>
-        <p class="small">Choose the allergens you want ALLER-AI to check against the package label.</p>
-
-        <div class="checks" id="allergyChecks">
-          <label class="check"><input type="checkbox" value="milk"> Milk</label>
-          <label class="check"><input type="checkbox" value="egg"> Egg</label>
-          <label class="check"><input type="checkbox" value="peanut"> Peanut</label>
-          <label class="check"><input type="checkbox" value="tree_nuts"> Tree nuts</label>
-          <label class="check"><input type="checkbox" value="soy"> Soy</label>
-          <label class="check"><input type="checkbox" value="wheat"> Wheat</label>
-          <label class="check"><input type="checkbox" value="sesame"> Sesame</label>
-          <label class="check"><input type="checkbox" value="fish"> Fish</label>
-          <label class="check"><input type="checkbox" value="shellfish"> Shellfish</label>
-        </div>
-
-        <div class="field" style="margin-top:14px">
-          <label for="customAvoid">Other ingredients to avoid (comma-separated)</label>
-          <input id="customAvoid" type="text" placeholder="e.g. gelatin, alcohol, pork" />
-        </div>
-      </article>
-
-      <article class="card">
-        <h2><span class="step">2</span>Scan or enter a barcode</h2>
-
-        <div class="field">
-          <label for="barcode">Barcode / GTIN</label>
-          <input id="barcode" type="text" inputmode="numeric" placeholder="e.g. 8801234567890" />
-        </div>
-
-        <div class="row">
-          <button id="lookupBtn">Look up product</button>
-          <button id="clearBarcodeBtn" class="secondary">Clear</button>
-        </div>
-
-        <p id="productInfo" class="small" style="margin-top:12px">
-          Uses Open Food Facts when a barcode is available. If no product data is found, use the package photo below.
-        </p>
-      </article>
-
-      <article class="card full">
-        <h2><span class="step">3</span>Take a photo or upload the ingredient label</h2>
-
-        <div class="row">
-          <label class="file-label" for="imageInput">Take / choose photo</label>
-          <input id="imageInput" type="file" accept="image/*" capture="environment" multiple hidden />
-
-          <select id="ocrLang" style="width:auto; min-width:180px">
-            <option value="eng+kor">English + Korean</option>
-            <option value="eng">English</option>
-            <option value="kor">Korean</option>
-            <option value="eng+fas">English + Persian</option>
-            <option value="eng+ara">English + Arabic</option>
-            <option value="eng+jpn">English + Japanese</option>
-            <option value="eng+chi_sim">English + Chinese</option>
-          </select>
-
-          <button id="ocrBtn" disabled>Run OCR</button>
-        </div>
-
-        <div class="preview" id="preview">
-          <span class="small">Package label preview</span>
-        </div>
-
-        <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
-        <div id="ocrProgressText" class="small" style="margin-top:6px"></div>
-
-        <div class="field" style="margin-top:14px">
-          <label for="labelText">Recognized / corrected ingredient text</label>
-          <textarea id="labelText" placeholder="OCR text or ingredients will appear here. You can correct the text before analysis."></textarea>
-        </div>
-
-        <div class="row">
-          <button id="analyzeBtn">Analyze for my profile</button>
-          <button id="clearTextBtn" class="secondary">Clear text</button>
-        </div>
-
-        <div id="result" class="status"></div>
-      </article>
-
-      <article class="card full">
-        <h2>How this MVP decides</h2>
-        <p class="small">
-          ALLER-AI does not ask an LLM to decide whether a product is safe. It normalizes multilingual
-          ingredient terms, maps known derivatives to allergen groups, checks precautionary phrases such
-          as “may contain,” and then applies deterministic rules.
-        </p>
-        <div id="kbSummary"></div>
-      </article>
+    <section class="hero">
+      <div class="eyebrow" data-i18n="eyebrow">For packaged food labels</div>
+      <h1 data-i18n="heroTitle">Check ingredients against what matters to you.</h1>
+      <p data-i18n="heroBody">
+        Take a clear photo of the ingredient label. ALLER AI checks multilingual ingredient terms and known derivatives against your selected profile.
+      </p>
     </section>
 
-    <p class="footnote">
-      Research/demo prototype only. Ingredient labels can be incomplete, OCR can be wrong, formulations can change,
-      and cross-contact risks may not be fully represented. For severe allergies, verify the original package label
-      and manufacturer information.
-    </p>
+    <div class="stack">
+      <section class="card">
+        <div class="section-head">
+          <div class="num">1</div>
+          <div>
+            <h2 data-i18n="profileTitle">What should we watch for?</h2>
+            <p data-i18n="profileBody">Choose one or more allergens or ingredients you avoid.</p>
+          </div>
+        </div>
+
+        <div class="chips" id="chips">
+          <label class="chip"><input type="checkbox" value="milk"><span data-i18n="milk">Milk</span></label>
+          <label class="chip"><input type="checkbox" value="egg"><span data-i18n="egg">Egg</span></label>
+          <label class="chip"><input type="checkbox" value="peanut"><span data-i18n="peanut">Peanut</span></label>
+          <label class="chip"><input type="checkbox" value="tree_nuts"><span data-i18n="treeNuts">Tree nuts</span></label>
+          <label class="chip"><input type="checkbox" value="soy"><span data-i18n="soy">Soy</span></label>
+          <label class="chip"><input type="checkbox" value="wheat"><span data-i18n="wheat">Wheat</span></label>
+          <label class="chip"><input type="checkbox" value="sesame"><span data-i18n="sesame">Sesame</span></label>
+          <label class="chip"><input type="checkbox" value="fish"><span data-i18n="fish">Fish</span></label>
+          <label class="chip"><input type="checkbox" value="shellfish"><span data-i18n="shellfish">Shellfish</span></label>
+        </div>
+
+        <div class="custom-row">
+          <input id="customAvoid" class="text-input" type="text" data-i18n-placeholder="customPlaceholder" placeholder="Other ingredient, e.g. gelatin" />
+          <button id="addCustom" class="btn btn-soft" type="button" data-i18n="add">Add</button>
+        </div>
+        <div id="customList" class="chips" style="margin-top:9px"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div class="num">2</div>
+          <div>
+            <h2 data-i18n="photoTitle">Photograph the ingredient label</h2>
+            <p data-i18n="photoBody">Fill the frame with the printed ingredients. You can add up to three photos.</p>
+          </div>
+        </div>
+
+        <div id="capture" class="capture">
+          <div class="capture-inner">
+            <div class="camera-icon" aria-hidden="true">
+              <svg width="29" height="29" viewBox="0 0 24 24" fill="none">
+                <path d="M8.2 6.5 9.4 4.8h5.2l1.2 1.7H19a2 2 0 0 1 2 2v8.7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8.5a2 2 0 0 1 2-2h3.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="12" cy="12.7" r="3.5" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+            <h3 data-i18n="captureTitle">Take a close, clear photo</h3>
+            <p data-i18n="captureBody">Focus on the ingredient list, not the front of the package.</p>
+            <button id="choosePhoto" class="btn btn-primary" type="button" data-i18n="choosePhoto">Take or choose photo</button>
+            <input id="photoInput" type="file" accept="image/*" capture="environment" multiple hidden />
+          </div>
+        </div>
+
+        <div id="photoGrid" class="photo-grid"></div>
+
+        <div class="tips">
+          <div class="tip" data-i18n="tip1">Use bright, even light and avoid glare.</div>
+          <div class="tip" data-i18n="tip2">Keep the ingredient text large and in focus.</div>
+          <div class="tip" data-i18n="tip3">If the label wraps around, add another photo.</div>
+        </div>
+
+        <div class="action-area">
+          <button id="analyzeBtn" class="btn btn-brand btn-wide" type="button" disabled data-i18n="analyze">Analyze ingredients</button>
+          <div class="action-note" data-i18n="actionNote">ALLER AI will not return a positive result when the image is not reliable enough to analyze.</div>
+        </div>
+
+        <div id="analysis" class="analysis">
+          <div class="spinner"></div>
+          <strong data-i18n="checking">Checking the label…</strong>
+          <span data-i18n="checkingSub">Reading ingredients, normalizing terms, and verifying matches.</span>
+        </div>
+
+        <div id="result" class="result neutral" aria-live="polite">
+          <div class="result-top">
+            <div class="result-icon" id="resultIcon">!</div>
+            <div>
+              <h3 id="resultTitle">—</h3>
+              <p id="resultBody">—</p>
+            </div>
+          </div>
+          <div id="evidence" class="evidence hidden"></div>
+        </div>
+
+        <div class="privacy">
+          <span aria-hidden="true">🔒</span>
+          <span data-i18n="localProfile">Your selected profile is stored only in this browser.</span>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer" data-i18n="disclaimer">
+      ALLER AI is a decision-support tool, not a medical guarantee. Product formulations can change. For severe allergies, always verify the original label and manufacturer guidance.
+    </footer>
   </main>
 
 <script>
-/* ============================================================
-   ALLER-AI single-file MVP
-   - Camera/photo input
-   - OCR with Tesseract.js
-   - Optional barcode lookup via Open Food Facts
-   - Multilingual ingredient normalization
-   - Deterministic allergy decision engine
-   ============================================================ */
+(() => {
+  "use strict";
 
-const KB = {
-  milk: {
-    label: "Milk",
-    direct: [
-      "milk","dairy","우유","유제품","유지방","유크림","분유","전지분유","탈지분유",
-      "شیر","لبنیات","حليب","ألبان","牛乳","乳製品","牛奶","乳制品",
-      "lait","milch","leche"
-    ],
-    derived: [
-      "whey","whey powder","whey protein","casein","caseinate","sodium caseinate",
-      "calcium caseinate","milk powder","skim milk powder","whole milk powder",
-      "butter","buttermilk","cream","cheese","yogurt",
-      "유청","유청분말","유청단백","카제인","카제인나트륨","버터","크림","치즈","요거트"
-    ]
-  },
-  egg: {
-    label: "Egg",
-    direct: ["egg","eggs","계란","달걀","난류","تخم مرغ","بيض","卵","たまご","鸡蛋","雞蛋","oeuf","ei","huevo"],
-    derived: ["egg white","egg yolk","albumen","ovalbumin","난백","난황","알부민"]
-  },
-  peanut: {
-    label: "Peanut",
-    direct: ["peanut","peanuts","groundnut","땅콩","بادام زمینی","فول سوداني","落花生","ピーナッツ","花生","cacahuète","erdnuss","cacahuete"],
-    derived: ["peanut flour","peanut powder","peanut butter","땅콩분말","땅콩버터"]
-  },
-  tree_nuts: {
-    label: "Tree nuts",
-    direct: [
-      "almond","walnut","cashew","pistachio","hazelnut","pecan","macadamia","brazil nut",
-      "아몬드","호두","캐슈넛","피스타치오","헤이즐넛","피칸","마카다미아",
-      "بادام","گردو","پسته","فندق","کاجو",
-      "اللوز","الجوز","الفستق","البندق","الكاجو",
-      "アーモンド","くるみ","カシューナッツ","ピスタチオ","杏仁","核桃","腰果","开心果"
-    ],
-    derived: []
-  },
-  soy: {
-    label: "Soy",
-    direct: ["soy","soya","soybean","대두","콩","سویا","فول الصويا","大豆","黄豆","大豆","soja"],
-    derived: ["soy lecithin","soya lecithin","soy protein","soy flour","대두레시틴","대두단백","콩가루"]
-  },
-  wheat: {
-    label: "Wheat",
-    direct: ["wheat","밀","소맥","گندم","قمح","小麦","小麥","小麦","blé","weizen","trigo"],
-    derived: ["wheat flour","flour (wheat)","밀가루","소맥분","gluten","글루텐"]
-  },
-  sesame: {
-    label: "Sesame",
-    direct: ["sesame","sesame seed","참깨","깨","کنجد","سمسم","ごま","芝麻","sésame","sesam","sésamo"],
-    derived: ["tahini","참기름","sesame oil","ارده","طحينة"]
-  },
-  fish: {
-    label: "Fish",
-    direct: ["fish","생선","어류","ماهی","سمك","魚","鱼","poisson","fisch","pescado"],
-    derived: ["anchovy","tuna","salmon","cod","멸치","참치","연어","대구"]
-  },
-  shellfish: {
-    label: "Shellfish",
-    direct: [
-      "shrimp","prawn","crab","lobster","shellfish","crustacean",
-      "새우","게","랍스터","갑각류",
-      "میگو","خرچنگ","روبيان","جمبري","سرطان البحر",
-      "えび","かに","エビ","カニ","虾","蝦","蟹"
-    ],
-    derived: []
-  }
-};
+  /* ============================================================
+     BACKEND CONNECTION
+     ------------------------------------------------------------
+     Accuracy-first design: this page intentionally does NOT run
+     consumer-grade OCR or allergy classification in the browser.
+     Connect a trusted server endpoint here later.
 
-const MAY_CONTAIN_PATTERNS = [
-  "may contain", "may contain traces", "traces of", "processed in a facility",
-  "manufactured in a facility", "made in a facility", "shared equipment",
-  "함유 가능", "혼입 가능", "같은 제조시설", "동일 제조시설", "같은 설비",
-  "ممکن است حاوی", "آثار", "قد يحتوي", "قد يحتوي على آثار",
-  "含む可能性", "同一工場", "可能含有", "可能含有微量"
-];
+     Expected POST: multipart/form-data
+       profile: JSON string
+       images: 1-3 image files
 
-const els = {
-  imageInput: document.getElementById("imageInput"),
-  preview: document.getElementById("preview"),
-  ocrBtn: document.getElementById("ocrBtn"),
-  ocrLang: document.getElementById("ocrLang"),
-  labelText: document.getElementById("labelText"),
-  analyzeBtn: document.getElementById("analyzeBtn"),
-  result: document.getElementById("result"),
-  progress: document.getElementById("progress"),
-  bar: document.getElementById("bar"),
-  ocrProgressText: document.getElementById("ocrProgressText"),
-  barcode: document.getElementById("barcode"),
-  lookupBtn: document.getElementById("lookupBtn"),
-  productInfo: document.getElementById("productInfo"),
-  customAvoid: document.getElementById("customAvoid"),
-};
+     Example response:
+     {
+       "status": "conflict" | "caution" | "no_listed_conflict" | "retake",
+       "title": "...",                  // optional
+       "message": "...",                // optional
+       "matched_label_term": "카제인나트륨",
+       "mapped_to": "Milk",
+       "reason": "Sodium caseinate is milk-derived."
+     }
+     ============================================================ */
+  const API_ENDPOINT = ""; // e.g. "https://api.yourdomain.com/v1/analyze"
 
-let selectedFiles = [];
-let lastOcrConfidence = null;
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
 
-function normalize(s) {
-  return (s || "")
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(/[()[\]{}]/g, " ")
-    .replace(/[,:;|/\\]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+  const photoInput = $("#photoInput");
+  const choosePhoto = $("#choosePhoto");
+  const photoGrid = $("#photoGrid");
+  const analyzeBtn = $("#analyzeBtn");
+  const analysis = $("#analysis");
+  const result = $("#result");
+  const resultTitle = $("#resultTitle");
+  const resultBody = $("#resultBody");
+  const resultIcon = $("#resultIcon");
+  const evidence = $("#evidence");
+  const addCustom = $("#addCustom");
+  const customAvoid = $("#customAvoid");
+  const customList = $("#customList");
+  const uiLang = $("#uiLang");
 
-function selectedAllergens() {
-  return [...document.querySelectorAll("#allergyChecks input:checked")].map(x => x.value);
-}
+  let photos = [];
+  let customTerms = [];
 
-function findAllOccurrences(text, term) {
-  const t = normalize(text);
-  const q = normalize(term);
-  if (!q || q.length < 2) return false;
-  return t.includes(q);
-}
-
-function inMayContainContext(rawText, term) {
-  const text = normalize(rawText);
-  const q = normalize(term);
-  let idx = text.indexOf(q);
-  while (idx >= 0) {
-    const start = Math.max(0, idx - 90);
-    const context = text.slice(start, idx + q.length + 15);
-    if (MAY_CONTAIN_PATTERNS.some(p => context.includes(normalize(p)))) return true;
-    idx = text.indexOf(q, idx + 1);
-  }
-  return false;
-}
-
-function analyzeText(rawText) {
-  const profile = selectedAllergens();
-  const customTerms = els.customAvoid.value
-    .split(",")
-    .map(x => normalize(x))
-    .filter(Boolean);
-
-  if (!profile.length && !customTerms.length) {
-    return {
-      verdict: "unknown",
-      title: "SELECT YOUR PROFILE",
-      message: "Choose at least one allergen or enter another ingredient to avoid.",
-      direct: [], caution: []
-    };
-  }
-
-  const direct = [];
-  const caution = [];
-
-  for (const allergenId of profile) {
-    const item = KB[allergenId];
-    if (!item) continue;
-
-    for (const term of [...item.direct, ...item.derived]) {
-      if (!findAllOccurrences(rawText, term)) continue;
-
-      const match = {
-        allergen: item.label,
-        term,
-        relation: item.derived.includes(term) ? "derived ingredient" : "direct term"
-      };
-
-      if (inMayContainContext(rawText, term)) caution.push(match);
-      else direct.push(match);
+  const i18n = {
+    en: {
+      tagline:"Understand the label before you eat.",
+      eyebrow:"For packaged food labels",
+      heroTitle:"Check ingredients against what matters to you.",
+      heroBody:"Take a clear photo of the ingredient label. ALLER AI checks multilingual ingredient terms and known derivatives against your selected profile.",
+      profileTitle:"What should we watch for?",
+      profileBody:"Choose one or more allergens or ingredients you avoid.",
+      milk:"Milk",egg:"Egg",peanut:"Peanut",treeNuts:"Tree nuts",soy:"Soy",wheat:"Wheat",sesame:"Sesame",fish:"Fish",shellfish:"Shellfish",
+      customPlaceholder:"Other ingredient, e.g. gelatin",
+      add:"Add",
+      photoTitle:"Photograph the ingredient label",
+      photoBody:"Fill the frame with the printed ingredients. You can add up to three photos.",
+      captureTitle:"Take a close, clear photo",
+      captureBody:"Focus on the ingredient list, not the front of the package.",
+      choosePhoto:"Take or choose photo",
+      tip1:"Use bright, even light and avoid glare.",
+      tip2:"Keep the ingredient text large and in focus.",
+      tip3:"If the label wraps around, add another photo.",
+      analyze:"Analyze ingredients",
+      actionNote:"ALLER AI will not return a positive result when the image is not reliable enough to analyze.",
+      checking:"Checking the label…",
+      checkingSub:"Reading ingredients, normalizing terms, and verifying matches.",
+      localProfile:"Your selected profile is stored only in this browser.",
+      disclaimer:"ALLER AI is a decision-support tool, not a medical guarantee. Product formulations can change. For severe allergies, always verify the original label and manufacturer guidance.",
+      goodPhoto:"Photo looks usable",
+      tooSmall:"Move closer to the label",
+      tooDark:"Photo is too dark",
+      tooBright:"Too much glare",
+      tooBlurry:"Hold the camera steadier",
+      maxPhotos:"You can add up to three photos.",
+      noProfile:"Select at least one item to check.",
+      addPhoto:"Add a clear ingredient-label photo.",
+      retakeTitle:"Please retake the label photo",
+      retakeBody:"The ingredient text is not clear enough for a reliable check. Move closer, keep the label flat, and avoid glare.",
+      conflictTitle:"Conflict detected",
+      cautionTitle:"Caution",
+      clearTitle:"No listed conflict detected",
+      clearBody:"No conflict with your selected profile was found in the ingredients that could be verified. This is not a guarantee that the product is safe.",
+      serviceTitle:"Analysis engine not connected",
+      serviceBody:"The new accuracy-focused interface is ready. Connect the verified server-side vision and ingredient engine before using this for real product decisions.",
+      matchedTerm:"Matched label term",
+      mappedTo:"Mapped to",
+      reason:"Reason",
+      remove:"Remove"
+    },
+    ko: {
+      tagline:"먹기 전에 라벨을 이해하세요.",
+      eyebrow:"포장식품 라벨 전용",
+      heroTitle:"나에게 중요한 성분을 확인하세요.",
+      heroBody:"원재료명이 선명하게 보이도록 촬영하세요. ALLER AI가 다국어 원재료명과 관련 유래 성분을 선택한 프로필과 대조합니다.",
+      profileTitle:"무엇을 확인할까요?",
+      profileBody:"피하고 싶은 알레르기 유발물질 또는 성분을 선택하세요.",
+      milk:"우유",egg:"달걀",peanut:"땅콩",treeNuts:"견과류",soy:"대두",wheat:"밀",sesame:"참깨",fish:"생선",shellfish:"갑각류",
+      customPlaceholder:"기타 피하고 싶은 성분 (예: 젤라틴)",
+      add:"추가",
+      photoTitle:"원재료명 라벨을 촬영하세요",
+      photoBody:"원재료명 글자가 화면을 충분히 채우도록 촬영하세요. 최대 3장까지 추가할 수 있습니다.",
+      captureTitle:"가까이에서 선명하게 촬영",
+      captureBody:"제품 앞면이 아니라 원재료명 표시에 초점을 맞춰주세요.",
+      choosePhoto:"촬영 또는 사진 선택",
+      tip1:"밝고 균일한 조명을 사용하고 반사를 피하세요.",
+      tip2:"원재료명 글자가 크고 선명하게 보이게 하세요.",
+      tip3:"라벨이 길면 다른 부분을 한 장 더 촬영하세요.",
+      analyze:"원재료 분석",
+      actionNote:"이미지 신뢰도가 충분하지 않으면 ALLER AI는 긍정적인 판정을 반환하지 않습니다.",
+      checking:"라벨을 확인하고 있습니다…",
+      checkingSub:"원재료를 읽고, 용어를 정규화하고, 일치 항목을 검증합니다.",
+      localProfile:"선택한 프로필은 이 브라우저에만 저장됩니다.",
+      disclaimer:"ALLER AI는 의사결정 보조 도구이며 의학적 안전을 보장하지 않습니다. 제품 배합은 변경될 수 있으므로 중증 알레르기가 있는 경우 원본 라벨과 제조사 안내를 반드시 확인하세요.",
+      goodPhoto:"사용 가능한 사진",
+      tooSmall:"라벨에 더 가까이 촬영하세요",
+      tooDark:"사진이 너무 어둡습니다",
+      tooBright:"반사가 너무 심합니다",
+      tooBlurry:"카메라를 더 안정적으로 잡아주세요",
+      maxPhotos:"사진은 최대 3장까지 추가할 수 있습니다.",
+      noProfile:"확인할 항목을 하나 이상 선택하세요.",
+      addPhoto:"선명한 원재료명 사진을 추가하세요.",
+      retakeTitle:"라벨을 다시 촬영해주세요",
+      retakeBody:"신뢰할 수 있는 확인을 하기에는 글자가 충분히 선명하지 않습니다. 더 가까이 촬영하고 반사를 피해주세요.",
+      conflictTitle:"주의 성분이 확인되었습니다",
+      cautionTitle:"주의가 필요합니다",
+      clearTitle:"표시된 충돌 성분 없음",
+      clearBody:"검증 가능한 원재료에서 선택한 프로필과 충돌하는 항목이 발견되지 않았습니다. 제품의 절대적 안전을 의미하지는 않습니다.",
+      serviceTitle:"분석 엔진 연결 전",
+      serviceBody:"정확도 중심의 새 인터페이스가 준비되었습니다. 실제 판정 전 서버 기반 비전·원재료 분석 엔진을 연결해야 합니다.",
+      matchedTerm:"라벨에서 확인된 표현",
+      mappedTo:"연결된 알레르기 항목",
+      reason:"판단 근거",
+      remove:"삭제"
+    },
+    fa: {
+      tagline:"قبل از خوردن، برچسب را بفهم.",
+      eyebrow:"ویژه محصولات غذایی بسته‌بندی‌شده",
+      heroTitle:"مواد تشکیل‌دهنده را با حساسیت‌های خودت بررسی کن.",
+      heroBody:"از فهرست مواد تشکیل‌دهنده یک عکس واضح بگیر. ALLER AI اصطلاحات چندزبانه و مشتقات شناخته‌شده را با پروفایل انتخابی تو تطبیق می‌دهد.",
+      profileTitle:"چه چیزهایی را بررسی کنیم؟",
+      profileBody:"یک یا چند آلرژن یا ماده‌ای را که می‌خواهی از آن پرهیز کنی انتخاب کن.",
+      milk:"شیر",egg:"تخم‌مرغ",peanut:"بادام زمینی",treeNuts:"آجیل درختی",soy:"سویا",wheat:"گندم",sesame:"کنجد",fish:"ماهی",shellfish:"صدف و سخت‌پوستان",
+      customPlaceholder:"ماده دیگر، مثلاً ژلاتین",
+      add:"افزودن",
+      photoTitle:"از فهرست مواد تشکیل‌دهنده عکس بگیر",
+      photoBody:"متن مواد تشکیل‌دهنده باید بخش اصلی تصویر باشد. حداکثر سه عکس می‌توانی اضافه کنی.",
+      captureTitle:"از نزدیک و واضح عکس بگیر",
+      captureBody:"روی فهرست مواد تمرکز کن، نه جلوی بسته‌بندی.",
+      choosePhoto:"گرفتن یا انتخاب عکس",
+      tip1:"نور یکنواخت باشد و بازتاب روی بسته نیفتد.",
+      tip2:"نوشته‌های مواد تشکیل‌دهنده بزرگ و در فوکوس باشند.",
+      tip3:"اگر برچسب دور بسته ادامه دارد، یک عکس دیگر اضافه کن.",
+      analyze:"بررسی مواد تشکیل‌دهنده",
+      actionNote:"اگر کیفیت تصویر برای تحلیل قابل اعتماد کافی نباشد، ALLER AI نتیجه مثبت نمایش نمی‌دهد.",
+      checking:"در حال بررسی برچسب…",
+      checkingSub:"خواندن مواد، یکسان‌سازی اصطلاحات و تأیید تطبیق‌ها.",
+      localProfile:"پروفایل انتخابی فقط در همین مرورگر ذخیره می‌شود.",
+      disclaimer:"ALLER AI ابزار کمک‌تصمیم است و تضمین پزشکی ارائه نمی‌کند. فرمول محصولات ممکن است تغییر کند. در حساسیت‌های شدید، همیشه برچسب اصلی و اطلاعات سازنده را بررسی کن.",
+      goodPhoto:"عکس قابل استفاده است",
+      tooSmall:"به برچسب نزدیک‌تر شو",
+      tooDark:"عکس بیش از حد تاریک است",
+      tooBright:"بازتاب نور زیاد است",
+      tooBlurry:"دوربین را ثابت‌تر نگه دار",
+      maxPhotos:"حداکثر سه عکس می‌توانی اضافه کنی.",
+      noProfile:"حداقل یک مورد برای بررسی انتخاب کن.",
+      addPhoto:"یک عکس واضح از فهرست مواد اضافه کن.",
+      retakeTitle:"لطفاً دوباره از برچسب عکس بگیر",
+      retakeBody:"متن برای یک بررسی قابل اعتماد به اندازه کافی واضح نیست. نزدیک‌تر شو، برچسب را صاف نگه دار و از بازتاب نور جلوگیری کن.",
+      conflictTitle:"ماده ناسازگار پیدا شد",
+      cautionTitle:"نیاز به احتیاط",
+      clearTitle:"ناسازگاری ثبت‌شده‌ای پیدا نشد",
+      clearBody:"در مواد قابل تأیید، موردی ناسازگار با پروفایل انتخابی پیدا نشد. این نتیجه به معنی تضمین ایمن بودن محصول نیست.",
+      serviceTitle:"موتور تحلیل هنوز متصل نشده",
+      serviceBody:"رابط جدید با تمرکز بر دقت آماده است. پیش از استفاده واقعی باید موتور بینایی و تحلیل مواد در سمت سرور متصل شود.",
+      matchedTerm:"عبارت روی برچسب",
+      mappedTo:"تطبیق با",
+      reason:"دلیل",
+      remove:"حذف"
     }
-  }
-
-  for (const term of customTerms) {
-    if (findAllOccurrences(rawText, term)) {
-      const match = { allergen: "Custom avoid", term, relation: "user-defined term" };
-      if (inMayContainContext(rawText, term)) caution.push(match);
-      else direct.push(match);
-    }
-  }
-
-  // Remove duplicates by allergen + normalized term
-  const dedupe = arr => [...new Map(arr.map(m => [`${m.allergen}|${normalize(m.term)}`, m])).values()];
-  const d = dedupe(direct);
-  const c = dedupe(caution);
-
-  if (d.length) {
-    return {
-      verdict: "avoid",
-      title: "AVOID",
-      message: "A listed ingredient conflicts with your selected profile.",
-      direct: d, caution: c
-    };
-  }
-
-  if (c.length) {
-    return {
-      verdict: "caution",
-      title: "CAUTION",
-      message: "The label contains a precautionary or possible cross-contact warning related to your profile.",
-      direct: d, caution: c
-    };
-  }
-
-  if (lastOcrConfidence !== null && lastOcrConfidence < 55) {
-    return {
-      verdict: "unknown",
-      title: "UNKNOWN — VERIFY LABEL",
-      message: `OCR confidence was low (${Math.round(lastOcrConfidence)}%). Please retake the photo or verify the original package label.`,
-      direct: [], caution: []
-    };
-  }
-
-  return {
-    verdict: "ok",
-    title: "NO LISTED CONFLICT DETECTED",
-    message: "No selected allergen term was detected in the available label text. This is not a guarantee that the product is safe.",
-    direct: [], caution: []
   };
-}
 
-function renderResult(r) {
-  els.result.className = `status show ${r.verdict}`;
-  const matches = [...r.direct, ...r.caution];
-
-  let html = `<div class="status-title">${r.title}</div><div>${r.message}</div>`;
-  if (matches.length) {
-    html += `<ul class="match-list">`;
-    for (const m of matches) {
-      html += `<li><strong>${escapeHtml(m.allergen)}</strong>: matched “${escapeHtml(m.term)}” (${escapeHtml(m.relation)})</li>`;
-    }
-    html += `</ul>`;
+  function t(key){
+    const lang = uiLang.value || "en";
+    return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
   }
-  els.result.innerHTML = html;
-  els.result.scrollIntoView({behavior:"smooth", block:"nearest"});
-}
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-  }[c]));
-}
-
-els.imageInput.addEventListener("change", async (e) => {
-  selectedFiles = [...e.target.files];
-  els.ocrBtn.disabled = !selectedFiles.length;
-  lastOcrConfidence = null;
-
-  if (!selectedFiles.length) return;
-
-  const first = selectedFiles[0];
-  const url = URL.createObjectURL(first);
-  els.preview.innerHTML = `<img id="previewImg" alt="Package label preview">`;
-  const img = document.getElementById("previewImg");
-  img.src = url;
-
-  img.onload = async () => {
-    // Try native barcode detection when supported.
-    try {
-      if ("BarcodeDetector" in window) {
-        const detector = new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e","code_128"]});
-        const codes = await detector.detect(img);
-        if (codes.length && !els.barcode.value) {
-          els.barcode.value = codes[0].rawValue;
-          els.productInfo.textContent = `Barcode detected from image: ${codes[0].rawValue}`;
-        }
-      }
-    } catch (_) {}
-  };
-});
-
-els.ocrBtn.addEventListener("click", async () => {
-  if (!selectedFiles.length) return;
-
-  els.ocrBtn.disabled = true;
-  els.progress.classList.add("show");
-  els.bar.style.width = "0%";
-  els.ocrProgressText.textContent = "Preparing OCR…";
-
-  let texts = [];
-  let confidences = [];
-
-  try {
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-
-      const result = await Tesseract.recognize(
-        file,
-        els.ocrLang.value,
-        {
-          logger: m => {
-            if (m.status === "recognizing text" && typeof m.progress === "number") {
-              const overall = ((i + m.progress) / selectedFiles.length) * 100;
-              els.bar.style.width = `${overall}%`;
-              els.ocrProgressText.textContent =
-                `OCR ${i+1}/${selectedFiles.length}: ${Math.round(m.progress * 100)}%`;
-            } else if (m.status) {
-              els.ocrProgressText.textContent = m.status;
-            }
-          }
-        }
-      );
-
-      texts.push(result.data.text || "");
-      if (Number.isFinite(result.data.confidence)) confidences.push(result.data.confidence);
-    }
-
-    els.labelText.value = texts.join("\n\n");
-    lastOcrConfidence = confidences.length
-      ? confidences.reduce((a,b) => a+b, 0) / confidences.length
-      : null;
-
-    els.bar.style.width = "100%";
-    els.ocrProgressText.textContent =
-      `OCR complete${lastOcrConfidence !== null ? ` • confidence ${Math.round(lastOcrConfidence)}%` : ""}. Review the text, then analyze.`;
-  } catch (err) {
-    console.error(err);
-    els.ocrProgressText.textContent =
-      "OCR failed. You can still paste or type the ingredient list manually.";
-  } finally {
-    els.ocrBtn.disabled = false;
+  function setLanguage(lang){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+    $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+    $$("[data-i18n-placeholder]").forEach(el => el.placeholder = t(el.dataset.i18nPlaceholder));
+    localStorage.setItem("aller_ui_lang", lang);
+    renderPhotos();
   }
-});
 
-els.analyzeBtn.addEventListener("click", () => {
-  const text = els.labelText.value.trim();
-  if (!text) {
-    renderResult({
-      verdict:"unknown",
-      title:"UNKNOWN — VERIFY LABEL",
-      message:"No ingredient text is available yet. Take a photo, run OCR, scan a barcode, or paste the label text.",
-      direct:[], caution:[]
+  uiLang.value = localStorage.getItem("aller_ui_lang") || "en";
+  uiLang.addEventListener("change", () => setLanguage(uiLang.value));
+
+  function getProfile(){
+    return {
+      allergens: $$("#chips input:checked").map(x => x.value),
+      custom_avoid: [...customTerms]
+    };
+  }
+
+  function saveProfile(){
+    localStorage.setItem("aller_profile", JSON.stringify(getProfile()));
+    updateAnalyzeState();
+  }
+
+  function restoreProfile(){
+    try{
+      const p = JSON.parse(localStorage.getItem("aller_profile") || "{}");
+      (p.allergens || []).forEach(v => {
+        const input = $(`#chips input[value="${CSS.escape(v)}"]`);
+        if(input) input.checked = true;
+      });
+      customTerms = Array.isArray(p.custom_avoid) ? p.custom_avoid : [];
+    }catch{}
+    renderCustom();
+  }
+
+  $("#chips").addEventListener("change", saveProfile);
+
+  function addCustomTerm(){
+    const value = customAvoid.value.trim();
+    if(!value) return;
+    if(!customTerms.some(x => x.toLowerCase() === value.toLowerCase())){
+      customTerms.push(value);
+    }
+    customAvoid.value = "";
+    renderCustom();
+    saveProfile();
+  }
+
+  addCustom.addEventListener("click", addCustomTerm);
+  customAvoid.addEventListener("keydown", e => {
+    if(e.key === "Enter"){
+      e.preventDefault();
+      addCustomTerm();
+    }
+  });
+
+  function renderCustom(){
+    customList.innerHTML = "";
+    customTerms.forEach((term, index) => {
+      const label = document.createElement("label");
+      label.className = "chip";
+      label.innerHTML = `<input type="checkbox" checked><span></span>`;
+      label.querySelector("span").textContent = term + " ×";
+      label.addEventListener("click", e => {
+        e.preventDefault();
+        customTerms.splice(index,1);
+        renderCustom();
+        saveProfile();
+      });
+      customList.appendChild(label);
     });
-    return;
-  }
-  renderResult(analyzeText(text));
-});
-
-els.lookupBtn.addEventListener("click", async () => {
-  const code = els.barcode.value.trim();
-  if (!code) {
-    els.productInfo.textContent = "Enter a barcode first.";
-    return;
   }
 
-  els.lookupBtn.disabled = true;
-  els.productInfo.textContent = "Looking up product…";
+  choosePhoto.addEventListener("click", () => photoInput.click());
 
-  try {
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+  photoInput.addEventListener("change", async e => {
+    const files = [...e.target.files];
+    for(const file of files){
+      if(photos.length >= 3){
+        alert(t("maxPhotos"));
+        break;
+      }
+      if(!file.type.startsWith("image/")) continue;
+      const assessment = await assessImage(file);
+      photos.push({file, assessment, url:URL.createObjectURL(file)});
+    }
+    photoInput.value = "";
+    renderPhotos();
+    updateAnalyzeState();
+  });
 
-    if (!data.product) {
-      els.productInfo.textContent = "Product not found. Use a package photo instead.";
+  async function assessImage(file){
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 720;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d", {willReadFrequently:true});
+    ctx.drawImage(bitmap,0,0,w,h);
+
+    const {data} = ctx.getImageData(0,0,w,h);
+    let sum = 0, sum2 = 0, n = 0;
+    let edgeSum = 0, edgeN = 0;
+
+    const gray = new Float32Array(w*h);
+    for(let i=0,j=0;i<data.length;i+=4,j++){
+      const g = .299*data[i] + .587*data[i+1] + .114*data[i+2];
+      gray[j] = g;
+      sum += g; sum2 += g*g; n++;
+    }
+    const mean = sum/n;
+
+    // A lightweight edge/clarity estimate. It is ONLY a capture-quality gate,
+    // not an OCR confidence score and is never shown numerically to the user.
+    for(let y=1;y<h-1;y+=2){
+      for(let x=1;x<w-1;x+=2){
+        const c = gray[y*w+x];
+        const gx = Math.abs(gray[y*w+x+1]-gray[y*w+x-1]);
+        const gy = Math.abs(gray[(y+1)*w+x]-gray[(y-1)*w+x]);
+        edgeSum += gx+gy;
+        edgeN++;
+      }
+    }
+    const edge = edgeSum / Math.max(1, edgeN);
+
+    const minDim = Math.min(bitmap.width, bitmap.height);
+    let code = "good";
+    if(minDim < 700) code = "small";
+    else if(mean < 55) code = "dark";
+    else if(mean > 225) code = "bright";
+    else if(edge < 17) code = "blurry";
+
+    bitmap.close();
+    return {code};
+  }
+
+  function qualityLabel(code){
+    return ({
+      good:t("goodPhoto"),
+      small:t("tooSmall"),
+      dark:t("tooDark"),
+      bright:t("tooBright"),
+      blurry:t("tooBlurry")
+    })[code] || t("goodPhoto");
+  }
+
+  function renderPhotos(){
+    photoGrid.innerHTML = "";
+    photos.forEach((p,index) => {
+      const card = document.createElement("div");
+      card.className = "photo-card";
+
+      const img = document.createElement("img");
+      img.src = p.url;
+      img.alt = "Ingredient label";
+
+      const remove = document.createElement("button");
+      remove.className = "remove";
+      remove.type = "button";
+      remove.setAttribute("aria-label", t("remove"));
+      remove.textContent = "×";
+      remove.addEventListener("click", () => {
+        URL.revokeObjectURL(p.url);
+        photos.splice(index,1);
+        renderPhotos();
+        updateAnalyzeState();
+      });
+
+      const badge = document.createElement("div");
+      badge.className = "qbadge " + (p.assessment.code === "good" ? "good" : "bad");
+      badge.textContent = qualityLabel(p.assessment.code);
+
+      card.append(img,remove,badge);
+      photoGrid.appendChild(card);
+    });
+  }
+
+  function updateAnalyzeState(){
+    const p = getProfile();
+    analyzeBtn.disabled = !(photos.length && (p.allergens.length || p.custom_avoid.length));
+  }
+
+  function showResult(kind,title,body,data={}){
+    analysis.classList.remove("show");
+    result.className = `result show ${kind}`;
+    resultTitle.textContent = title;
+    resultBody.textContent = body;
+    resultIcon.textContent = kind === "danger" ? "!" : kind === "warn" ? "!" : kind === "ok" ? "✓" : "i";
+
+    evidence.innerHTML = "";
+    const rows = [
+      ["matched_label_term","matchedTerm"],
+      ["mapped_to","mappedTo"],
+      ["reason","reason"]
+    ].filter(([field]) => data[field]);
+
+    if(rows.length){
+      rows.forEach(([field,labelKey]) => {
+        const row = document.createElement("div");
+        row.className = "evidence-row";
+        const a = document.createElement("span");
+        a.textContent = t(labelKey);
+        const b = document.createElement("strong");
+        b.textContent = data[field];
+        row.append(a,b);
+        evidence.appendChild(row);
+      });
+      evidence.classList.remove("hidden");
+    }else{
+      evidence.classList.add("hidden");
+    }
+    result.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  analyzeBtn.addEventListener("click", async () => {
+    const profile = getProfile();
+
+    if(!(profile.allergens.length || profile.custom_avoid.length)){
+      showResult("neutral",t("noProfile"),"");
+      return;
+    }
+    if(!photos.length){
+      showResult("neutral",t("addPhoto"),"");
       return;
     }
 
-    const p = data.product;
-    const name = p.product_name || p.product_name_en || "Unnamed product";
-    const brand = Array.isArray(p.brands_tags) ? p.brands_tags.join(", ") : (p.brands || "");
-    const ingredients = p.ingredients_text || p.ingredients_text_en || "";
-    const allergens = p.allergens || "";
-    const traces = p.traces || "";
-
-    els.productInfo.innerHTML =
-      `<strong>${escapeHtml(name)}</strong>${brand ? ` • ${escapeHtml(brand)}` : ""}<br>` +
-      `<span class="small">Open Food Facts data loaded.</span>`;
-
-    const merged = [
-      ingredients ? `Ingredients: ${ingredients}` : "",
-      allergens ? `Allergens: ${allergens}` : "",
-      traces ? `May contain / traces: ${traces}` : ""
-    ].filter(Boolean).join("\n");
-
-    if (merged) {
-      els.labelText.value = merged;
-      lastOcrConfidence = null;
-    } else {
-      els.productInfo.innerHTML += `<br><span class="small">No ingredient text available for this barcode; use a photo.</span>`;
+    // Precision-first: if ALL images fail the capture gate, request a retake.
+    const usable = photos.filter(p => p.assessment.code === "good");
+    if(!usable.length){
+      showResult("neutral",t("retakeTitle"),t("retakeBody"));
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    els.productInfo.textContent = "Barcode lookup failed. Use a package photo or try again.";
-  } finally {
-    els.lookupBtn.disabled = false;
-  }
-});
 
-document.getElementById("clearBarcodeBtn").addEventListener("click", () => {
-  els.barcode.value = "";
-  els.productInfo.textContent =
-    "Uses Open Food Facts when a barcode is available. If no product data is found, use the package photo below.";
-});
+    result.classList.remove("show");
+    analysis.classList.add("show");
 
-document.getElementById("clearTextBtn").addEventListener("click", () => {
-  els.labelText.value = "";
-  els.result.className = "status";
-  lastOcrConfidence = null;
-});
+    if(!API_ENDPOINT){
+      await new Promise(r => setTimeout(r, 650));
+      showResult("neutral",t("serviceTitle"),t("serviceBody"));
+      return;
+    }
 
-(function renderKbSummary() {
-  const el = document.getElementById("kbSummary");
-  const labels = Object.values(KB).map(x => x.label);
-  el.innerHTML = labels.map(x => `<span class="pill">${escapeHtml(x)}</span>`).join("");
+    try{
+      const form = new FormData();
+      form.append("profile", JSON.stringify(profile));
+      usable.forEach(p => form.append("images",p.file,p.file.name));
+
+      const res = await fetch(API_ENDPOINT,{
+        method:"POST",
+        body:form
+      });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      switch(data.status){
+        case "conflict":
+          showResult("danger", data.title || t("conflictTitle"), data.message || "", data);
+          break;
+        case "caution":
+          showResult("warn", data.title || t("cautionTitle"), data.message || "", data);
+          break;
+        case "no_listed_conflict":
+          showResult("ok", data.title || t("clearTitle"), data.message || t("clearBody"), data);
+          break;
+        default:
+          showResult("neutral", data.title || t("retakeTitle"), data.message || t("retakeBody"), data);
+      }
+    }catch(err){
+      console.error(err);
+      showResult("neutral",t("retakeTitle"),t("retakeBody"));
+    }
+  });
+
+  restoreProfile();
+  setLanguage(uiLang.value);
+  updateAnalyzeState();
 })();
 </script>
 </body>
