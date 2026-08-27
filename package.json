@@ -1,0 +1,8 @@
+{
+  "name": "aller-ai-safety-first",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/engine.test.mjs"
+  }
+}
