@@ -37,8 +37,8 @@ let lastRun = null;
 const I = {
   en: {
     tag: "Understand the label before you eat.",
-    hero: "Safety-first multilingual label checking.",
-    sub: "ALLER AI now performs a thorough on-device scan across OCR language families. A negative result is shown only after the multilingual coverage gate passes.",
+    hero: "Fast safety-first multilingual label checking.",
+    sub: "ALLER AI routes explicit PP-OCRv5 language-family models on-device. Language hints are prioritized, direct conflicts stop early, and a negative result is still blocked until the safety coverage gate passes.",
     profile: "What should we watch for?",
     profileSub: "Choose one or more allergens or ingredients you avoid.",
     milk: "Milk", egg: "Egg", peanut: "Peanut", treeNuts: "Tree nuts",
@@ -54,7 +54,7 @@ const I = {
     tip1: "Include the complete ingredient/allergen statement when possible.",
     tip2: "Include the nutrition panel if you want full-package calories.",
     tip3: "The first thorough scan downloads OCR models. Later scans can reuse browser cache.",
-    autoLang: "PaddleOCR PP-OCRv5 on-device · multilingual family scan · automatic rotation",
+    autoLang: "PaddleOCR PP-OCRv5 on-device · fast language-family router · automatic rotation",
     analyze: "Run thorough safety scan",
     note: "Photos are processed in your browser. ALLER AI does not upload them to a Render analysis server.",
     checking: "Running safety scan…",
@@ -109,7 +109,7 @@ const I = {
     tip1: "가능하면 전체 원재료/알레르기 표시가 보이도록 촬영하세요.",
     tip2: "전체 포장 열량을 원하면 영양정보도 포함하세요.",
     tip3: "첫 정밀 분석에서는 OCR 모델을 다운로드합니다. 이후 브라우저 캐시를 사용할 수 있습니다.",
-    autoLang: "PaddleOCR PP-OCRv5 기기 내 실행 · 다국어 계열 정밀 스캔 · 자동 회전",
+    autoLang: "PaddleOCR PP-OCRv5 기기 내 실행 · 빠른 언어 계열 라우터 · 자동 회전",
     analyze: "정밀 안전 스캔",
     note: "사진은 브라우저에서 처리되며 Render 분석 서버로 업로드되지 않습니다.",
     checking: "안전 스캔 중…",
@@ -611,9 +611,24 @@ analyze.onclick = async () => {
       learning.set(prod.id, await prepareLearning(prod));
     }
 
-    const scan = await deepScan(active, p, (info) => {
-      setProgress(info.message || `${info.family || ""}`);
-    });
+    const scan = await deepScan(
+      active,
+      p,
+      (sources, partialFamilyStatus) => {
+        // Partial evaluation is used only to detect a terminal direct Conflict.
+        // It is never used to certify a negative result.
+        return evaluateProduct({
+          sources,
+          profile: p,
+          familyStatus: partialFamilyStatus,
+          requiredFamilies: [],
+          learnedTexts: [],
+        });
+      },
+      (info) => {
+        setProgress(info.message || `${info.family || ""}`);
+      }
+    );
 
     const defs = scan.defs;
     const requiredIds = defs.map((d) => d.id);

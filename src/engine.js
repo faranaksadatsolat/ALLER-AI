@@ -5,14 +5,12 @@ export const ALLERGENS = ONTOLOGY.allergens;
 export const MARKERS = ONTOLOGY.label_markers;
 
 export const FAMILY_GROUP = {
-  en: "latin",
   latin: "latin",
   korean: "hangul",
   arabic: "arabic",
   cyrillic: "cyrillic",
   devanagari: "devanagari",
-  japanese: "japanese",
-  chinese: "han",
+  cjk: "cjk",
   thai: "thai",
   greek: "greek",
   tamil: "tamil",
@@ -20,8 +18,8 @@ export const FAMILY_GROUP = {
 };
 
 export const REQUIRED_BASE_FAMILIES = [
-  "en", "korean", "arabic", "latin", "cyrillic",
-  "devanagari", "japanese", "chinese", "thai"
+  "latin", "korean", "arabic", "cyrillic",
+  "devanagari", "cjk", "thai"
 ];
 
 const SCRIPT_REGEX = {
@@ -30,8 +28,7 @@ const SCRIPT_REGEX = {
   arabic: /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g,
   cyrillic: /[\u0400-\u052F]/g,
   devanagari: /[\u0900-\u097F]/g,
-  japanese: /[\u3040-\u30FF]/g,
-  han: /[\u3400-\u4DBF\u4E00-\u9FFF]/g,
+  cjk: /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]/g,
   thai: /[\u0E00-\u0E7F]/g,
   greek: /[\u0370-\u03FF]/g,
   tamil: /[\u0B80-\u0BFF]/g,
@@ -240,7 +237,11 @@ function aliasTextForMatch(allergenId, alias, text) {
 
 function classifyLineContext(lines, idx, alias, learned = false, allergenId = "") {
   const line = lines[idx] || {};
-  const matchText = aliasTextForMatch(allergenId, alias, line.text || "");
+
+  // Generic dairy aliases such as butter/cream/milk need adjacent OCR lines.
+  // This prevents split layouts such as "COCOA" + "BUTTER" from becoming Milk.
+  const raw = allergenId === "milk" ? contextFor(lines, idx, 1) : (line.text || "");
+  const matchText = aliasTextForMatch(allergenId, alias, raw);
   if (!containsTerm(matchText, alias)) return null;
   if (learned) return "direct";
 
@@ -250,8 +251,6 @@ function classifyLineContext(lines, idx, alias, learned = false, allergenId = ""
 
   const hp = headingPosition(lines);
   if (hp >= 0 && idx >= hp && idx <= hp + 16) return "direct";
-
-  // Mention outside a verified ingredient/declaration context.
   return "mention";
 }
 

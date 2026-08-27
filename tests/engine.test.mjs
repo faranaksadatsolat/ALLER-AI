@@ -183,4 +183,32 @@ function fullStatus() {
   assert.equal(x.status, "no_listed_conflict");
 }
 
-console.log("ALLER AI v2 deterministic safety tests: PASS");
+
+
+// 13) Split "COCOA" + "BUTTER" must not become a Milk mention/conflict.
+{
+  const x = evaluateProduct({
+    sources: [
+      source("latin", ["DARK CHOCOLATE INGREDIENTS: COCOA MASS, SUGAR, COCOA", "BUTTER, LECITHIN (E322) & VANILLIN"]),
+    ],
+    profile: profileMilk,
+    familyStatus: fullStatus(),
+    requiredFamilies: REQUIRED_BASE_FAMILIES,
+  });
+  assert.equal(x.status, "no_listed_conflict");
+}
+
+// 14) Real Persian milk remains conflict even when cocoa butter is split nearby.
+{
+  const x = evaluateProduct({
+    sources: [
+      source("arabic", ["ترکیبات: شکر، کره", "کاکائو، شیر خشک، وانیل"]),
+    ],
+    profile: profileMilk,
+    familyStatus: fullStatus(),
+    requiredFamilies: REQUIRED_BASE_FAMILIES,
+  });
+  assert.equal(x.status, "conflict");
+}
+
+console.log("ALLER AI v2.1 deterministic safety tests: PASS");

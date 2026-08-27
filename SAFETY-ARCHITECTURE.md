@@ -71,3 +71,16 @@ The exported JSON dataset can later be used to build a reviewed training corpus 
 - product-specific label templates.
 
 Any future learned model should remain behind the deterministic safety gate and should not be allowed to override verified allergen evidence.
+
+
+## v2.1 Fast safety router
+
+v2.1 reduces redundant browser inference without weakening negative-result safety:
+- explicit PP-OCRv5 model names are used;
+- 9 base pipelines are collapsed into 7 recognition families;
+- Latin OCR is used as the routing pass because multilingual packages often expose
+  labels such as PER / ARB / RU in Latin characters;
+- hinted families are promoted immediately;
+- a strong orientation lock prevents every later family from testing four rotations;
+- a verified direct Conflict is terminal for that product;
+- negative results still require full mandatory-family coverage.

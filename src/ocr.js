@@ -1,34 +1,36 @@
 
-import { FAMILY_GROUP, customRequiredFamilies } from "./engine.js";
+import { customRequiredFamilies } from "./engine.js";
 
+const DET_MODEL = "PP-OCRv5_mobile_det";
+
+// Official explicit PP-OCRv5 recognition models.
+// English is covered by the Latin model; Chinese/Japanese share PP-OCRv5_mobile_rec.
+// This reduces the mandatory base scan from 9 pipelines to 7.
 export const FAMILY_DEFS = [
-  { id: "en", label: "English", lang: "en", group: "latin" },
-  { id: "korean", label: "Korean", lang: "korean", group: "hangul" },
-  { id: "arabic", label: "Arabic / Persian", lang: "fa", group: "arabic" },
-  { id: "latin", label: "Latin multilingual", lang: "fr", group: "latin" },
-  { id: "cyrillic", label: "Cyrillic", lang: "ru", group: "cyrillic" },
-  { id: "devanagari", label: "Devanagari", lang: "hi", group: "devanagari" },
-  { id: "japanese", label: "Japanese", lang: "japan", group: "japanese" },
-  { id: "chinese", label: "Chinese", lang: "ch", group: "han" },
-  { id: "thai", label: "Thai", lang: "th", group: "thai" },
+  { id: "latin", label: "Latin multilingual", group: "latin", recModel: "latin_PP-OCRv5_mobile_rec" },
+  { id: "korean", label: "Korean", group: "hangul", recModel: "korean_PP-OCRv5_mobile_rec" },
+  { id: "arabic", label: "Arabic / Persian", group: "arabic", recModel: "arabic_PP-OCRv5_mobile_rec" },
+  { id: "cyrillic", label: "Cyrillic", group: "cyrillic", recModel: "cyrillic_PP-OCRv5_mobile_rec" },
+  { id: "devanagari", label: "Devanagari", group: "devanagari", recModel: "devanagari_PP-OCRv5_mobile_rec" },
+  { id: "cjk", label: "Chinese / Japanese", group: "cjk", recModel: "PP-OCRv5_mobile_rec" },
+  { id: "thai", label: "Thai", group: "thai", recModel: "th_PP-OCRv5_mobile_rec" },
 ];
 
 const EXTRA_FAMILIES = {
-  greek: { id: "greek", label: "Greek", lang: "el", group: "greek" },
-  tamil: { id: "tamil", label: "Tamil", lang: "ta", group: "tamil" },
-  telugu: { id: "telugu", label: "Telugu", lang: "te", group: "telugu" },
+  greek: { id: "greek", label: "Greek", group: "greek", recModel: "el_PP-OCRv5_mobile_rec" },
+  tamil: { id: "tamil", label: "Tamil", group: "tamil", recModel: "ta_PP-OCRv5_mobile_rec" },
+  telugu: { id: "telugu", label: "Telugu", group: "telugu", recModel: "te_PP-OCRv5_mobile_rec" },
 };
 
 let PaddleOCRClass = null;
+const warmModels = new Map();
 
 async function loadPaddleOCR() {
   if (PaddleOCRClass) return PaddleOCRClass;
-
   const urls = [
     "https://cdn.jsdelivr.net/npm/@paddleocr/paddleocr-js@0.4.2/+esm",
     "https://esm.sh/@paddleocr/paddleocr-js@0.4.2?bundle",
   ];
-
   let last = null;
   for (const url of urls) {
     try {
@@ -52,8 +54,7 @@ function regexCount(text, group) {
     arabic: /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g,
     cyrillic: /[\u0400-\u052F]/g,
     devanagari: /[\u0900-\u097F]/g,
-    japanese: /[\u3040-\u30FF]/g,
-    han: /[\u3400-\u4DBF\u4E00-\u9FFF]/g,
+    cjk: /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]/g,
     thai: /[\u0E00-\u0E7F]/g,
     greek: /[\u0370-\u03FF]/g,
     tamil: /[\u0B80-\u0BFF]/g,
@@ -82,24 +83,17 @@ function summarize(result, def) {
   const text = items.map((x) => x.text).join("\n");
   const chars = text.replace(/\s+/g, "").length;
   const scriptChars = regexCount(text, def.group);
-
-  // Score should prefer correctly recognized target-script text, not gibberish.
   const scriptFactor = Math.min(1, scriptChars / 18);
   const textFactor = Math.min(1, chars / 45);
   const quality = meanScore * (0.55 * textFactor + 0.45 * scriptFactor);
 
   return {
-    items,
-    text,
-    meanScore,
-    chars,
-    scriptChars,
-    quality,
+    items, text, meanScore, chars, scriptChars, quality,
     detectedBoxes: Number(result?.metrics?.detectedBoxes || 0),
   };
 }
 
-async function baseCanvas(file, maxSide = 2100) {
+async function baseCanvas(file, maxSide = 1850) {
   const bmp = await createImageBitmap(file);
   const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
   const c = document.createElement("canvas");
@@ -116,16 +110,12 @@ async function baseCanvas(file, maxSide = 2100) {
 function rotateCanvas(src, deg) {
   const d = ((deg % 360) + 360) % 360;
   if (d === 0) return src;
-
   const c = document.createElement("canvas");
   if (d === 90 || d === 270) {
-    c.width = src.height;
-    c.height = src.width;
+    c.width = src.height; c.height = src.width;
   } else {
-    c.width = src.width;
-    c.height = src.height;
+    c.width = src.width; c.height = src.height;
   }
-
   const ctx = c.getContext("2d", { willReadFrequently: true });
   ctx.translate(c.width / 2, c.height / 2);
   ctx.rotate((d * Math.PI) / 180);
@@ -135,64 +125,66 @@ function rotateCanvas(src, deg) {
 
 function enhancedCanvas(src) {
   const c = document.createElement("canvas");
-  c.width = src.width;
-  c.height = src.height;
+  c.width = src.width; c.height = src.height;
   const ctx = c.getContext("2d", { willReadFrequently: true });
-  ctx.filter = "contrast(1.35) saturate(0.85)";
+  ctx.filter = "contrast(1.28) saturate(.9)";
   ctx.drawImage(src, 0, 0);
   ctx.filter = "none";
   return c;
 }
 
 async function createOCR(def) {
+  // Keep the three most common/routing-critical recognizers warm.
+  // Others are disposed after use to keep browser RAM bounded.
+  if (warmModels.has(def.id)) return warmModels.get(def.id);
+
   const PaddleOCR = await loadPaddleOCR();
-  return await PaddleOCR.create({
-    lang: def.lang,
-    ocrVersion: "PP-OCRv5",
+  const ocr = await PaddleOCR.create({
+    textDetectionModelName: DET_MODEL,
+    textRecognitionModelName: def.recModel,
     worker: false,
     textDetectionBatchSize: 1,
     textRecognitionBatchSize: 8,
-    ortOptions: {
-      backend: "auto",
-    },
+    ortOptions: { backend: "auto" },
   });
+
+  if (["latin", "korean", "arabic"].includes(def.id)) warmModels.set(def.id, ocr);
+  return ocr;
 }
 
 async function recognizeVariants(ocr, def, photo) {
   if (!photo._baseCanvas) photo._baseCanvas = await baseCanvas(photo.file);
 
+  // After one family has strongly established orientation, later families use
+  // a single orientation. This is the largest inference-time reduction.
   const rotations = photo.rotationLocked
     ? [photo.rotation]
-    : [photo.rotation ?? 0, 90, 270, 180].filter(
-        (x, i, a) => a.indexOf(x) === i
-      );
+    : [photo.rotation ?? 0, 90, 270, 180].filter((x, i, a) => a.indexOf(x) === i);
 
   const canvases = rotations.map((r) => rotateCanvas(photo._baseCanvas, r));
-  let results = await ocr.predict(canvases, {
+  const results = await ocr.predict(canvases, {
     textRecScoreThresh: 0.30,
-    textDetLimitSideLen: 1920,
-    textDetMaxSideLimit: 2300,
+    textDetLimitSideLen: 1760,
+    textDetMaxSideLimit: 2100,
     textDetBoxThresh: 0.45,
   });
 
-  let candidates = results.map((r, i) => ({
+  const candidates = results.map((r, i) => ({
     rotation: rotations[i],
     summary: summarize(r, def),
-  }));
+  })).sort((a, b) => b.summary.quality - a.summary.quality);
 
-  candidates.sort((a, b) => b.summary.quality - a.summary.quality);
   let best = candidates[0] || {
     rotation: rotations[0] || 0,
     summary: summarize(null, def),
   };
 
-  // One controlled enhancement retry if boxes exist but recognition is weak.
-  if (best.summary.detectedBoxes >= 2 && best.summary.quality < 0.48) {
+  if (best.summary.detectedBoxes >= 2 && best.summary.quality < 0.45) {
     const enhanced = enhancedCanvas(rotateCanvas(photo._baseCanvas, best.rotation));
     const [rr] = await ocr.predict(enhanced, {
       textRecScoreThresh: 0.28,
-      textDetLimitSideLen: 1920,
-      textDetMaxSideLimit: 2300,
+      textDetLimitSideLen: 1760,
+      textDetMaxSideLimit: 2100,
       textDetBoxThresh: 0.42,
     });
     const ss = summarize(rr, def);
@@ -201,11 +193,10 @@ async function recognizeVariants(ocr, def, photo) {
     }
   }
 
-  // Only lock orientation when target-script evidence is substantial.
   if (
     !photo.rotationLocked &&
     best.summary.meanScore >= 0.62 &&
-    best.summary.scriptChars >= 12 &&
+    best.summary.scriptChars >= 10 &&
     best.summary.chars >= 24
   ) {
     photo.rotation = best.rotation;
@@ -213,6 +204,23 @@ async function recognizeVariants(ocr, def, photo) {
   }
 
   return best;
+}
+
+function textOfSources(sources) {
+  return (sources || []).flatMap((s) => s.items || []).map((x) => x.text || "").join("\n");
+}
+
+function routingHints(text) {
+  const t = String(text || "");
+  const ids = [];
+  // Exact uppercase tags are deliberate; they avoid matching ordinary prose.
+  if (/\b(?:PER|ARB)\b/.test(t)) ids.push("arabic");
+  if (/\bRU\b/.test(t)) ids.push("cyrillic");
+  if (/\b(?:KOR|KO)\b/.test(t)) ids.push("korean");
+  if (/\b(?:JPN|JP|CHN|CN)\b/.test(t)) ids.push("cjk");
+  if (/\bTH\b/.test(t)) ids.push("thai");
+  if (/\bHI\b/.test(t)) ids.push("devanagari");
+  return [...new Set(ids)];
 }
 
 export function requiredFamiliesForProfile(profile) {
@@ -223,37 +231,64 @@ export function requiredFamiliesForProfile(profile) {
   ];
 }
 
-export async function deepScan(products, profile, onProgress = () => {}) {
+// Fast-safe route:
+// 1) Latin first because it often reveals explicit language-panel tags.
+// 2) Hinted family immediately next (PER/ARB/RU/etc.).
+// 3) Korean early because it is a primary target market.
+// 4) Remaining families only if a direct conflict has not already been found.
+// A direct Conflict is terminal because no lower-severity result can override it.
+export async function deepScan(products, profile, evaluatePartial, onProgress = () => {}) {
   const defs = requiredFamiliesForProfile(profile);
-  const familyStatus = Object.fromEntries(defs.map((d) => [d.id, { ok: false }]));
+  const byId = new Map(defs.map((d) => [d.id, d]));
+  const familyStatus = Object.fromEntries(defs.map((d) => [d.id, { ok: false, attempted: false }]));
   const productSources = new Map(products.map((p) => [p.id, []]));
+  const terminal = new Set();
 
-  const totalSteps = defs.length;
-  let step = 0;
+  const queue = [];
+  const queued = new Set();
+  const enqueue = (id, front = false) => {
+    if (!byId.has(id) || queued.has(id)) return;
+    queued.add(id);
+    front ? queue.unshift(id) : queue.push(id);
+  };
 
-  for (const def of defs) {
-    step += 1;
+  enqueue("latin");
+  enqueue("korean");
+  enqueue("arabic");
+  enqueue("cyrillic");
+  enqueue("devanagari");
+  enqueue("cjk");
+  enqueue("thai");
+  for (const d of defs) enqueue(d.id);
+
+  let completed = 0;
+  while (queue.length) {
+    const id = queue.shift();
+    const def = byId.get(id);
+    if (!def) continue;
+
     onProgress({
       phase: "model",
       family: def.label,
-      step,
-      totalSteps,
-      message: `Loading ${def.label} OCR (${step}/${totalSteps})…`,
+      completed,
+      total: defs.length,
+      message: `Loading ${def.label} OCR…`,
     });
 
     let ocr = null;
     try {
+      familyStatus[id] = { ok: false, attempted: true };
       ocr = await createOCR(def);
 
       for (let pi = 0; pi < products.length; pi++) {
         const product = products[pi];
+        if (terminal.has(product.id)) continue;
 
         onProgress({
           phase: "scan",
           family: def.label,
-          step,
-          totalSteps,
           product: pi + 1,
+          totalProducts: products.length,
           message: `${def.label}: product ${pi + 1}/${products.length}`,
         });
 
@@ -276,25 +311,45 @@ export async function deepScan(products, profile, onProgress = () => {}) {
             console.warn("Photo OCR failed", def.id, ph, e);
           }
         }
+
+        // Latin OCR can cheaply expose multilingual panel tags.
+        if (id === "latin") {
+          const hints = routingHints(textOfSources(productSources.get(product.id)));
+          // Put hinted families at the very front in reverse so first hint wins.
+          [...hints].reverse().forEach((h) => {
+            const qi = queue.indexOf(h);
+            if (qi >= 0) queue.splice(qi, 1);
+            queue.unshift(h);
+          });
+        }
+
+        // Early terminal only for a verified direct conflict.
+        if (evaluatePartial) {
+          const partial = evaluatePartial(productSources.get(product.id), familyStatus);
+          if (partial?.status === "conflict") terminal.add(product.id);
+        }
       }
 
-      familyStatus[def.id] = { ok: true };
+      familyStatus[id] = { ok: true, attempted: true };
     } catch (e) {
       console.error("OCR family failed", def.id, e);
-      familyStatus[def.id] = {
+      familyStatus[id] = {
         ok: false,
+        attempted: true,
         error: String(e?.message || e),
       };
     } finally {
-      try {
-        await ocr?.dispose?.();
-      } catch {}
+      // Warm common models; dispose less common ones after use.
+      if (ocr && !warmModels.has(def.id)) {
+        try { await ocr.dispose?.(); } catch {}
+      }
     }
+
+    completed += 1;
+
+    // If every product has a direct conflict, there is no reason to load more models.
+    if (terminal.size === products.length) break;
   }
 
-  return {
-    defs,
-    familyStatus,
-    productSources,
-  };
+  return { defs, familyStatus, productSources, terminal };
 }
