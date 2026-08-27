@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
-<title>ALLER AI — Safety-first multilingual ingredient checker</title>
+<!-- ALLER AI v1.1.0: stable fast primary OCR + targeted multilingual verification; learning does not affect live decisions -->
+<title>ALLER AI — Multi-product ingredient checker</title>
 <style>
 :root{--ink:#0b1220;--muted:#667085;--bg:#f7f8fb;--card:#fff;--line:#e7eaf0;--brand:#4169e1;--brand-soft:#eef2ff;--danger:#b42318;--danger-bg:#fff2f0;--warn:#995400;--warn-bg:#fff8e8;--ok:#146c43;--ok-bg:#edf9f2;--shadow:0 16px 50px rgba(16,24,40,.08);--r:26px}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% -10%,rgba(65,105,225,.12),transparent 32%),var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif}button,input,select{font:inherit}
 .app{width:min(820px,calc(100% - 28px));margin:auto;padding:22px 0 48px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px}.mark{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--ink);color:white;font-weight:900}.name{font-size:21px;font-weight:900}.tag{color:var(--muted);font-size:12px;margin-top:3px}select{border:1px solid var(--line);background:white;border-radius:12px;padding:8px 10px}
 .hero{padding:22px 5px}.hero h1{font-size:clamp(32px,8vw,52px);line-height:1.04;letter-spacing:-.045em;margin:0}.hero p{color:var(--muted);line-height:1.65;margin:13px 0 0}.stack{display:grid;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
 .head{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px}.num{width:32px;height:32px;border-radius:11px;background:var(--brand-soft);display:grid;place-items:center;color:#243b8a;font-weight:900;flex:0 0 auto}.head h2{font-size:19px;margin:1px 0 3px}.head p{font-size:13px;color:var(--muted);margin:0;line-height:1.5}
-.safetybar{background:#eef2ff;border:1px solid #cbd5ff;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;color:#243b8a}.safetybar strong{display:block;margin-bottom:2px}
 .chips{display:flex;flex-wrap:wrap;gap:9px}.chip{position:relative}.chip input{position:absolute;opacity:0}.chip span{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;min-height:42px;border:1px solid var(--line);border-radius:999px;font-size:14px;font-weight:650;cursor:pointer}.chip span:before{content:"";width:16px;height:16px;border-radius:50%;border:1.5px solid #cbd2dc}.chip input:checked+span{background:var(--brand-soft);border-color:#9db1ff;color:#243b8a}.chip input:checked+span:before{border:5px solid var(--brand);background:white}
 .custom{display:flex;gap:8px;margin-top:13px}.custom input{flex:1;min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px}.btn{border:0;border-radius:14px;padding:11px 15px;font-weight:850;cursor:pointer}.primary{background:var(--ink);color:white}.soft{background:#f0f2f6;color:var(--ink)}.outline{background:white;border:1px solid var(--line);color:var(--ink)}.brandbtn{background:var(--brand);color:white;width:100%;min-height:54px;font-size:16px;border-radius:17px}.btn:disabled{opacity:.45;cursor:not-allowed}
 .product{border:1px solid var(--line);border-radius:20px;padding:15px;margin-top:12px;background:#fcfdff}.ptop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.ptitle{font-weight:900}.psub{font-size:11px;color:var(--muted);margin-top:2px}.removeProduct{border:0;background:#f2f4f7;border-radius:10px;padding:7px 9px;cursor:pointer;color:#475467}
@@ -19,86 +19,507 @@
 .addProduct{width:100%;margin-top:12px}.tips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}@media(max-width:540px){.tips{grid-template-columns:1fr}}.tip{border:1px solid var(--line);border-radius:13px;padding:10px 11px;color:#475467;font-size:12px;line-height:1.45}.action{margin-top:16px}.note{text-align:center;color:var(--muted);font-size:11px;line-height:1.5;margin-top:8px}
 .loading{display:none;text-align:center;padding:24px 10px 5px}.loading.show{display:block}.spinner{width:42px;height:42px;border-radius:50%;border:4px solid #e8ecf7;border-top-color:var(--brand);animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.loading strong{display:block}.loading span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
 .result{display:none;margin-top:16px;border:1px solid #dbe1ea;border-radius:22px;padding:19px;background:#f8fafc}.result.show{display:block}.summaryHead{display:flex;gap:12px;align-items:flex-start}.ricon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:white;font-weight:900;flex:0 0 auto}.result h3{font-size:19px;margin:1px 0 4px}.result p{font-size:13px;line-height:1.55;margin:0}.calTotal{margin-top:14px;border-radius:16px;padding:13px 14px;background:white;border:1px solid var(--line)}.calTotal strong{font-size:21px;display:block}.calTotal span{font-size:11px;color:var(--muted)}
-.productResults{display:grid;gap:10px;margin-top:14px}.presult{border:1px solid var(--line);border-radius:17px;padding:14px;background:white}.presult.danger{border-color:#f7c9c4;background:var(--danger-bg)}.presult.warn{border-color:#f3d69a;background:var(--warn-bg)}.presult.ok{border-color:#bfe6ce;background:var(--ok-bg)}.prtop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.prtitle{font-weight:900}.badge{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.78)}.prmsg{font-size:12px;line-height:1.5;margin-top:7px}.evidence{border-top:1px solid rgba(0,0,0,.08);padding-top:9px;margin-top:10px;display:grid;gap:6px}.ev{display:flex;justify-content:space-between;gap:20px;font-size:11px}.ev span{opacity:.72}.ev strong{text-align:right}.kcal{margin-top:10px;font-size:12px;font-weight:850}.kcal small{display:block;font-weight:500;color:var(--muted);margin-top:3px}.teachBtn{margin-top:12px;width:100%;font-size:12px}
-.privacy,.footer{color:var(--muted);font-size:11px;line-height:1.6}.privacy{margin-top:14px}.footer{text-align:center;padding:20px 5px 0}.learnrow{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:10px}.learnrow .btn{font-size:11px;padding:7px 10px}.learnrow span{font-size:11px;color:var(--muted)}
+.productResults{display:grid;gap:10px;margin-top:14px}.presult{border:1px solid var(--line);border-radius:17px;padding:14px;background:white}.presult.danger{border-color:#f7c9c4;background:var(--danger-bg)}.presult.warn{border-color:#f3d69a;background:var(--warn-bg)}.presult.ok{border-color:#bfe6ce;background:var(--ok-bg)}.prtop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.prtitle{font-weight:900}.badge{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.78)}.prmsg{font-size:12px;line-height:1.5;margin-top:7px}.evidence{border-top:1px solid rgba(0,0,0,.08);padding-top:9px;margin-top:10px;display:grid;gap:6px}.ev{display:flex;justify-content:space-between;gap:20px;font-size:11px}.ev span{opacity:.72}.ev strong{text-align:right}.kcal{margin-top:10px;font-size:12px;font-weight:850}.kcal small{display:block;font-weight:500;color:var(--muted);margin-top:3px}
+.privacy,.footer{color:var(--muted);font-size:11px;line-height:1.6}.privacy{margin-top:14px}.footer{text-align:center;padding:20px 5px 0}html[dir="rtl"] .brand,html[dir="rtl"] .head,html[dir="rtl"] .summaryHead{flex-direction:row-reverse;text-align:right}html[dir="rtl"] .hero{text-align:right}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 <main class="app">
-<header>
-  <div class="brand"><div class="mark">알러</div><div><div class="name">ALLER AI <span id="versionBadge" style="font-size:10px;color:#667085;font-weight:800;vertical-align:middle">v2.2.0</span></div><div class="tag" data-i18n="tag">Understand the label before you eat.</div></div></div>
-  <select id="lang"><option value="en">EN</option><option value="ko">한국어</option></select>
-</header>
-
-<section class="hero">
-  <h1 data-i18n="hero">Fast safety-first multilingual label checking.</h1>
-  <p data-i18n="sub">ALLER AI performs a thorough on-device multilingual scan.</p>
-</section>
-
+<header><div class="brand"><div class="mark">알러</div><div><div class="name">ALLER AI <span style="font-size:10px;color:#667085;font-weight:800;vertical-align:middle">v1.1.0</span></div><div class="tag" data-i18n="tag">Understand the label before you eat.</div></div></div><select id="lang"><option value="en">EN</option><option value="ko">한국어</option></select></header>
+<section class="hero"><h1 data-i18n="hero">Check one product or a whole basket.</h1><p data-i18n="sub">Add several photos of the same product, or create separate product groups. Package language is detected automatically across major writing systems; no language selection is required.</p></section>
 <div class="stack">
 <section class="card">
-  <div class="safetybar"><strong>Safety-first gate</strong>“No listed conflict” is blocked unless the required multilingual OCR families complete and the visible ingredient/declaration text is sufficiently verified.</div>
-  <div class="head"><div class="num">1</div><div><h2 data-i18n="profile">What should we watch for?</h2><p data-i18n="profileSub">Choose one or more allergens or ingredients you avoid.</p></div></div>
-
-  <div class="chips" id="chips">
-    <label class="chip"><input type="checkbox" value="milk"><span data-i18n="milk">Milk</span></label>
-    <label class="chip"><input type="checkbox" value="egg"><span data-i18n="egg">Egg</span></label>
-    <label class="chip"><input type="checkbox" value="peanut"><span data-i18n="peanut">Peanut</span></label>
-    <label class="chip"><input type="checkbox" value="tree_nuts"><span data-i18n="treeNuts">Tree nuts</span></label>
-    <label class="chip"><input type="checkbox" value="soy"><span data-i18n="soy">Soy</span></label>
-    <label class="chip"><input type="checkbox" value="wheat"><span data-i18n="wheat">Wheat</span></label>
-    <label class="chip"><input type="checkbox" value="sesame"><span data-i18n="sesame">Sesame</span></label>
-    <label class="chip"><input type="checkbox" value="fish"><span data-i18n="fish">Fish</span></label>
-    <label class="chip"><input type="checkbox" value="shellfish"><span data-i18n="shellfish">Shellfish</span></label>
-  </div>
-
-  <div class="custom"><input id="custom" placeholder="Other ingredient, e.g. gelatin"><button class="btn soft" id="add" data-i18n="add">Add</button></div>
-  <div class="chips" id="customList" style="margin-top:9px"></div>
+<div class="head"><div class="num">1</div><div><h2 data-i18n="profile">What should we watch for?</h2><p data-i18n="profileSub">Choose one or more allergens or ingredients you avoid.</p></div></div>
+<div class="chips" id="chips">
+<label class="chip"><input type="checkbox" value="milk"><span data-i18n="milk">Milk</span></label><label class="chip"><input type="checkbox" value="egg"><span data-i18n="egg">Egg</span></label><label class="chip"><input type="checkbox" value="peanut"><span data-i18n="peanut">Peanut</span></label><label class="chip"><input type="checkbox" value="tree_nuts"><span data-i18n="treeNuts">Tree nuts</span></label><label class="chip"><input type="checkbox" value="soy"><span data-i18n="soy">Soy</span></label><label class="chip"><input type="checkbox" value="wheat"><span data-i18n="wheat">Wheat</span></label><label class="chip"><input type="checkbox" value="sesame"><span data-i18n="sesame">Sesame</span></label><label class="chip"><input type="checkbox" value="fish"><span data-i18n="fish">Fish</span></label><label class="chip"><input type="checkbox" value="shellfish"><span data-i18n="shellfish">Shellfish</span></label>
+</div>
+<div class="custom"><input id="custom" placeholder="Other ingredient, e.g. gelatin"><button class="btn soft" id="add" data-i18n="add">Add</button></div><div class="chips" id="customList" style="margin-top:9px"></div>
 </section>
-
 <section class="card">
-  <div class="head"><div class="num">2</div><div><h2 data-i18n="products">Add product photos</h2><p data-i18n="productsSub">Up to 3 photos belong to one product.</p></div></div>
-  <div id="products"></div>
-  <button id="addProduct" class="btn outline addProduct" data-i18n="addProduct">+ Add another product</button>
-
-  <div class="tips">
-    <div class="tip"><strong>🧠 Safety-first on-device OCR</strong><br><span data-i18n="autoLang">PaddleOCR PP-OCRv5 fast routed multilingual scan.</span></div>
-    <div class="tip" data-i18n="tip1">Include the complete ingredient/allergen statement.</div>
-    <div class="tip" data-i18n="tip2">Include the nutrition panel if you want calories.</div>
-    <div class="tip" data-i18n="tip3">First scan downloads OCR models; later scans can use browser cache.</div>
-  </div>
-
-  <div class="action">
-    <button id="analyze" class="btn brandbtn" disabled data-i18n="analyze">Run thorough safety scan</button>
-    <div class="note" data-i18n="note">Photos are processed in your browser.</div>
-  </div>
-
-  <div id="loading" class="loading">
-    <div class="spinner"></div>
-    <strong data-i18n="checking">Running safety scan…</strong>
-    <span data-i18n="checkingSub">Starting the multilingual OCR pipeline…</span>
-  </div>
-
-  <div id="result" class="result">
-    <div class="summaryHead">
-      <div id="ricon" class="ricon">i</div>
-      <div><h3 id="rtitle"></h3><p id="rbody"></p></div>
-    </div>
-    <div id="calTotal" class="calTotal" style="display:none"></div>
-    <div id="productResults" class="productResults"></div>
-  </div>
-
-  <div class="privacy">🔒 <span data-i18n="privacy">Photos and profile stay on this device during analysis.</span></div>
-  <div class="learnrow">
-    <button id="exportLearning" class="btn outline" style="display:none" data-i18n="exportLearning">Export learning data</button>
-    <span id="learningCount"></span>
-  </div>
+<div class="head"><div class="num">2</div><div><h2 data-i18n="products">Add product photos</h2><p data-i18n="productsSub">Up to 3 photos belong to one product. Use “Add another product” for a different item.</p></div></div>
+<div id="products"></div>
+<button id="addProduct" class="btn outline addProduct" data-i18n="addProduct">+ Add another product</button>
+<div class="tips"><div class="tip"><strong>🌐 Automatic multilingual OCR</strong><br><span data-i18n="autoLang">No package-language selection needed.</span></div><div class="tip" data-i18n="tip1">Include the ingredient/allergen statement.</div><div class="tip" data-i18n="tip2">Include the nutrition panel if you want calories.</div><div class="tip" data-i18n="tip3">Use extra photos when text wraps around the package.</div></div>
+<div class="action"><button id="analyze" class="btn brandbtn" disabled data-i18n="analyze">Analyze products</button><div class="note" data-i18n="note">Calories are summed only when full-package energy can be calculated from the visible label.</div></div>
+<div id="loading" class="loading"><div class="spinner"></div><strong data-i18n="checking">Checking products…</strong><span data-i18n="checkingSub">Reading each product separately.</span></div>
+<div id="result" class="result"><div class="summaryHead"><div id="ricon" class="ricon">i</div><div><h3 id="rtitle"></h3><p id="rbody"></p></div></div><div id="calTotal" class="calTotal" style="display:none"></div><div id="productResults" class="productResults"></div></div>
+<div class="privacy">🔒 <span data-i18n="privacy">Your selected profile is stored only in this browser.</span></div>
 </section>
 </div>
-
-<div class="footer" data-i18n="footer">ALLER AI is a safety-first decision-support prototype, not a medical guarantee.</div>
+<div class="footer" data-i18n="footer">ALLER AI is a decision-support prototype, not a medical guarantee. For severe allergies, verify the original label and manufacturer guidance.</div>
 </main>
+<script>
+(()=>{
+const APP_VERSION="1.1.0";
+const MAX_PRODUCTS=6,MAX_PHOTOS=3;
+const ONTOLOGY={"schema_version":1,"description":"Canonical allergen concepts and multilingual aliases. Consumer output uses canonical concepts; OCR language is automatic.","allergens":{"milk":{"label":"Milk","aliases":{"en":["milk","whey","whey powder","casein","caseinate","milk powder","skim milk powder","whole milk powder","butter","cheese","cream","yogurt"],"ko":["우유","유청","유청분말","유청단백","카제인","카제인나트륨","탈지분유","전지분유","분유","버터","치즈","크림","요거트"],"fr":["lait","poudre de lait","poudre de lait entier","lait écrémé","lactosérum","caséine","caséinate","beurre","fromage","crème","yaourt"],"es":["leche","leche en polvo","leche desnatada en polvo","suero de leche","caseína","caseinato","mantequilla","queso","nata","yogur"],"de":["milch","milchpulver","magermilchpulver","molke","molkenpulver","kasein","kaseinat","butter","käse","sahne","joghurt"],"it":["latte","latte in polvere","latte scremato in polvere","siero di latte","caseina","caseinato","burro","formaggio","panna","yogurt"],"pt":["leite","leite em pó","leite em po","soro de leite","caseína","caseina","caseinato","manteiga","queijo","creme de leite","iogurte"],"nl":["melk","melkpoeder","magere melkpoeder","wei","weipoeder","caseïne","caseine","caseïnaat","caseinaat","boter","kaas","room","yoghurt"],"ru":["молоко","сухое молоко","сыворотка","казеин","казеинат","сливочное масло","сыр","сливки","йогурт"],"ar":["حليب","مسحوق الحليب","مصل اللبن","كازين","كازينات","زبدة","جبن","قشدة","زبادي"],"fa":["شیر","شیر خشک","آب پنیر","پودر آب پنیر","کازئین","کازئینات","کره","پنیر","خامه","ماست"],"hi":["दूध","दूध पाउडर","मट्ठा","व्हे","केसिन","केसिनेट","मक्खन","पनीर","क्रीम","दही"],"ja":["牛乳","乳清","ホエイ","カゼイン","カゼイネート","脱脂粉乳","全粉乳","バター","チーズ","クリーム","ヨーグルト"],"zh":["牛奶","乳清","乳清粉","酪蛋白","酪蛋白酸盐","奶粉","脱脂奶粉","全脂奶粉","黄油","奶酪","奶油","酸奶"],"th":["นม","นมผง","เวย์","ผงเวย์","เคซีน","เคซิเนต","เนย","ชีส","ครีม","โยเกิร์ต"],"tr":["süt","süt tozu","peynir altı suyu","kazein","kazeinat","tereyağı","peynir","krema","yoğurt"],"id":["susu","susu bubuk","whey","kasein","kaseinat","mentega","keju","krim","yogurt"]}},"egg":{"label":"Egg","aliases":{"en":["egg","egg white","egg yolk","albumen","ovalbumin"],"ko":["계란","달걀","난백","난황","알부민","오발부민"],"fr":["œuf","oeuf","œufs","oeufs","blanc d'œuf","blanc d'oeuf","jaune d'œuf","jaune d'oeuf","ovalbumine"],"es":["huevo","huevos","clara de huevo","yema de huevo","ovoalbúmina","ovoalbumina"],"de":["ei","eier","eiklar","eigelb","ovalbumin"],"it":["uovo","uova","albume","tuorlo","ovoalbumina"],"pt":["ovo","ovos","clara de ovo","gema de ovo","ovalbumina"],"nl":["ei","eieren","eiwit","eigeel","ovalbumine"],"ru":["яйцо","яйца","яичный белок","яичный желток","овальбумин"],"ar":["بيض","بياض البيض","صفار البيض","ألبومين"],"fa":["تخم مرغ","سفیده تخم مرغ","زرده تخم مرغ","آلبومین"],"hi":["अंडा","अंडे","अंडे का सफेद भाग","अंडे की जर्दी","एल्बुमिन"],"ja":["鶏卵","卵白","卵黄","オボアルブミン"],"zh":["鸡蛋","蛋清","蛋白","蛋黄","卵清蛋白"],"th":["ไข่","ไข่ขาว","ไข่แดง","อัลบูมิน"],"tr":["yumurta","yumurta akı","yumurta sarısı","ovalbümin"],"id":["telur","putih telur","kuning telur","ovalbumin"]}},"peanut":{"label":"Peanut","aliases":{"en":["peanut","groundnut","peanut flour","peanut powder","peanut butter"],"ko":["땅콩","땅콩가루","땅콩분말","땅콩버터"],"fr":["arachide","cacahuète","cacahuete","beurre de cacahuète","beurre de cacahuete"],"es":["cacahuete","cacahuete","maní","mani","mantequilla de cacahuete","mantequilla de maní"],"de":["erdnuss","erdnüsse","erdnussbutter"],"it":["arachide","arachidi","burro di arachidi"],"pt":["amendoim","manteiga de amendoim"],"nl":["pinda","pinda's","pindakaas"],"ru":["арахис","арахисовая паста"],"ar":["فول سوداني","زبدة الفول السوداني"],"fa":["بادام زمینی","کره بادام زمینی"],"hi":["मूंगफली","मूंगफली का मक्खन"],"ja":["落花生","ピーナッツ","ピーナッツバター"],"zh":["花生","花生粉","花生酱"],"th":["ถั่วลิสง","เนยถั่ว"],"tr":["yer fıstığı","fıstık ezmesi"],"id":["kacang tanah","selai kacang"]}},"tree_nuts":{"label":"Tree nuts","aliases":{"en":["almond","walnut","cashew","pistachio","hazelnut","pecan","macadamia","brazil nut","pine nut"],"ko":["아몬드","호두","캐슈넛","캐슈너트","피스타치오","헤이즐넛","피칸","마카다미아","브라질너트","잣"],"fr":["amande","noix","noix de cajou","pistache","noisette","noix de pécan","noix de pecan","macadamia","noix du brésil","noix du bresil","pignon"],"es":["almendra","nuez","anacardo","pistacho","avellana","nuez pecana","macadamia","nuez de brasil","piñón","pinon"],"de":["mandel","walnuss","cashew","cashewnuss","pistazie","haselnuss","pekannuss","macadamia","paranuss","pinienkern"],"it":["mandorla","noce","anacardo","pistacchio","nocciola","noce pecan","macadamia","noce del brasile","pinolo"],"pt":["amêndoa","amendoa","noz","castanha de caju","pistache","avelã","avela","noz pecã","noz peca","macadâmia","macadamia","castanha do pará","castanha do para","pinhão","pinhao"],"nl":["amandel","walnoot","cashewnoot","pistache","hazelnoot","pecannoot","macadamia","paranoot","pijnboompit"],"ru":["миндаль","грецкий орех","кешью","фисташка","фундук","пекан","макадамия","бразильский орех","кедровый орех"],"ar":["لوز","جوز","كاجو","فستق","بندق","بيكان","مكاديميا","جوز برازيلي","صنوبر"],"fa":["بادام","گردو","کاجو","پسته","فندق","پکان","ماکادمیا","بادام برزیلی","دانه کاج"],"hi":["बादाम","अखरोट","काजू","पिस्ता","हेज़लनट","पेकान","मैकाडामिया","ब्राज़ील नट","चिलगोजा"],"ja":["アーモンド","くるみ","クルミ","カシューナッツ","ピスタチオ","ヘーゼルナッツ","ピーカンナッツ","マカダミアナッツ","ブラジルナッツ","松の実"],"zh":["杏仁","核桃","腰果","开心果","榛子","碧根果","夏威夷果","巴西坚果","松子"],"th":["อัลมอนด์","วอลนัท","เม็ดมะม่วงหิมพานต์","พิสตาชิโอ","เฮเซลนัท","พีแคน","แมคคาเดเมีย","บราซิลนัท","ไพน์นัท"],"tr":["badem","ceviz","kaju","antep fıstığı","fındık","pekan","makademya","brezilya cevizi","çam fıstığı"],"id":["almond","kenari","kacang mete","pistachio","hazelnut","pecan","macadamia","kacang brasil","kacang pinus"]}},"soy":{"label":"Soy","aliases":{"en":["soy","soya","soybean","soy lecithin","soy protein","soy flour"],"ko":["대두","콩","대두레시틴","대두단백","대두분"],"fr":["soja","lécithine de soja","lecithine de soja","protéine de soja","proteine de soja","farine de soja"],"es":["soja","soya","lecitina de soja","proteína de soja","proteina de soja","harina de soja"],"de":["soja","sojabohne","sojalecithin","sojaprotein","sojamehl"],"it":["soia","lecitina di soia","proteine di soia","farina di soia"],"pt":["soja","lecitina de soja","proteína de soja","proteina de soja","farinha de soja"],"nl":["soja","sojaboon","sojalecithine","soja-eiwit","sojameel"],"ru":["соя","соевый лецитин","соевый белок","соевая мука"],"ar":["صويا","فول الصويا","ليسيثين الصويا","بروتين الصويا"],"fa":["سویا","دانه سویا","لسیتین سویا","پروتئین سویا"],"hi":["सोया","सोयाबीन","सोया लेसिथिन","सोया प्रोटीन"],"ja":["大豆","大豆レシチン","大豆たんぱく","大豆タンパク"],"zh":["大豆","黄豆","大豆卵磷脂","大豆蛋白"],"th":["ถั่วเหลือง","เลซิตินจากถั่วเหลือง","โปรตีนถั่วเหลือง"],"tr":["soya","soya fasulyesi","soya lesitini","soya proteini"],"id":["kedelai","lesitin kedelai","protein kedelai"]}},"wheat":{"label":"Wheat","aliases":{"en":["wheat","wheat flour","wheat starch","wheat gluten"],"ko":["밀","밀가루","소맥","소맥분","밀전분","밀글루텐"],"fr":["blé","ble","farine de blé","farine de ble","amidon de blé","amidon de ble","gluten de blé","gluten de ble"],"es":["trigo","harina de trigo","almidón de trigo","almidon de trigo","gluten de trigo"],"de":["weizen","weizenmehl","weizenstärke","weizenstarke","weizengluten"],"it":["grano","frumento","farina di frumento","amido di frumento","glutine di frumento"],"pt":["trigo","farinha de trigo","amido de trigo","glúten de trigo","gluten de trigo"],"nl":["tarwe","tarwebloem","tarwemeel","tarwezetmeel","tarwegluten"],"ru":["пшеница","пшеничная мука","пшеничный крахмал","пшеничный глютен"],"ar":["قمح","دقيق القمح","نشا القمح","غلوتين القمح"],"fa":["گندم","آرد گندم","نشاسته گندم","گلوتن گندم"],"hi":["गेहूं","गेहूँ","गेहूं का आटा","गेहूँ का आटा","गेहूं स्टार्च","गेहूं ग्लूटेन"],"ja":["小麦","小麦粉","小麦でん粉","小麦澱粉","小麦グルテン"],"zh":["小麦","小麦粉","小麦淀粉","小麦麸质","小麦面筋"],"th":["ข้าวสาลี","แป้งสาลี","แป้งข้าวสาลี","กลูเตนข้าวสาลี"],"tr":["buğday","buğday unu","buğday nişastası","buğday gluteni"],"id":["gandum","tepung gandum","pati gandum","gluten gandum"]}},"sesame":{"label":"Sesame","aliases":{"en":["sesame","sesame seed","sesame oil","tahini"],"ko":["참깨","깨","참기름","타히니"],"fr":["sésame","sesame","graines de sésame","graines de sesame","huile de sésame","huile de sesame","tahini"],"es":["sésamo","sesamo","semillas de sésamo","semillas de sesamo","aceite de sésamo","aceite de sesamo","tahini"],"de":["sesam","sesamsamen","sesamöl","sesamol","tahini"],"it":["sesamo","semi di sesamo","olio di sesamo","tahina"],"pt":["gergelim","sementes de gergelim","óleo de gergelim","oleo de gergelim","tahine"],"nl":["sesam","sesamzaad","sesamolie","tahin"],"ru":["кунжут","семена кунжута","кунжутное масло","тахини"],"ar":["سمسم","بذور السمسم","زيت السمسم","طحينة"],"fa":["کنجد","دانه کنجد","روغن کنجد","ارده"],"hi":["तिल","तिल के बीज","तिल का तेल","ताहिनी"],"ja":["ごま","ゴマ","胡麻","ごま油","胡麻油","タヒニ"],"zh":["芝麻","芝麻籽","芝麻油","麻酱"],"th":["งา","เมล็ดงา","น้ำมันงา","ทาฮินี"],"tr":["susam","susam tohumu","susam yağı","tahin"],"id":["wijen","biji wijen","minyak wijen","tahini"]}},"fish":{"label":"Fish","aliases":{"en":["fish","anchovy","tuna","salmon","cod","sardine","mackerel"],"ko":["어류","생선","멸치","참치","연어","대구","정어리","고등어"],"fr":["poisson","anchois","thon","saumon","cabillaud","sardine","maquereau"],"es":["pescado","anchoa","atún","atun","salmón","salmon","bacalao","sardina","caballa"],"de":["fisch","sardelle","thunfisch","lachs","kabeljau","sardine","makrele"],"it":["pesce","acciuga","tonno","salmone","merluzzo","sardina","sgombro"],"pt":["peixe","anchova","atum","salmão","salmao","bacalhau","sardinha","cavala"],"nl":["vis","ansjovis","tonijn","zalm","kabeljauw","sardine","makreel"],"ru":["рыба","анчоус","тунец","лосось","треска","сардина","скумбрия"],"ar":["سمك","أنشوجة","تونة","سلمون","قد","سردين","ماكريل"],"fa":["ماهی","آنچوی","تن ماهی","سالمون","کاد","ساردین","ماکرل"],"hi":["मछली","एन्कोवी","टूना","सैल्मन","कॉड","सार्डिन","मैकेरल"],"ja":["魚","アンチョビ","まぐろ","マグロ","鮭","サーモン","タラ","いわし","イワシ","さば","サバ"],"zh":["鱼","鳀鱼","金枪鱼","三文鱼","鲑鱼","鳕鱼","沙丁鱼","鲭鱼"],"th":["ปลา","แอนโชวี","ทูน่า","แซลมอน","ปลาคอด","ซาร์ดีน","แมคเคอเรล"],"tr":["balık","ançüez","ton balığı","somon","morina","sardalya","uskumru"],"id":["ikan","teri","tuna","salmon","kod","sarden","makarel"]}},"shellfish":{"label":"Shellfish","aliases":{"en":["shellfish","crustacean","crustaceans","shrimp","prawn","crab","lobster"],"ko":["갑각류","새우","게","꽃게","랍스터","가재"],"fr":["crustacé","crustaces","crustacés","crevette","crabe","homard"],"es":["crustáceo","crustaceo","crustáceos","crustaceos","camarón","camaron","gamba","langostino","cangrejo","langosta"],"de":["krebstiere","garnele","garnelen","krabbe","hummer"],"it":["crostacei","gambero","gamberi","granchio","aragosta"],"pt":["crustáceos","crustaceos","camarão","camarao","caranguejo","lagosta"],"nl":["schaaldieren","garnaal","garnalen","krab","kreeft"],"ru":["ракообразные","креветка","креветки","краб","омар"],"ar":["قشريات","روبيان","جمبري","سرطان البحر","سلطعون","كركند"],"fa":["سخت پوستان","سخت‌پوستان","میگو","خرچنگ","لابستر"],"hi":["क्रस्टेशियन","झींगा","प्रॉन","केकड़ा","लॉबस्टर"],"ja":["甲殻類","えび","エビ","海老","かに","カニ","蟹","ロブスター"],"zh":["甲壳类","虾","对虾","蟹","螃蟹","龙虾"],"th":["สัตว์น้ำเปลือกแข็ง","กุ้ง","ปู","ล็อบสเตอร์"],"tr":["kabuklular","karides","yengeç","ıstakoz"],"id":["krustasea","udang","kepiting","lobster"]}}},"label_markers":{"ingredient_headings":["ingredients","ingredient list","원재료명","원재료","원료명","원재료 및 함량","ingrédients","ingredients:","ingredientes","zutaten","ingredienti","ingrediënten","состав","ингредиенты","المكونات","مواد تشکیل دهنده","ترکیبات","सामग्री","原材料名","原材料","配料","配料表","成分","ส่วนประกอบ","içindekiler","komposisi"],"nutrition_headings":["nutrition facts","nutrition information","영양정보","valeurs nutritionnelles","información nutricional","informacion nutricional","nährwertangaben","nahrwertangaben","valori nutrizionali","informação nutricional","informacao nutricional","voedingswaarde","пищевая ценность","القيمة الغذائية","ارزش غذایی","पोषण","栄養成分","营养成分","ข้อมูลโภชนาการ","besin değerleri","informasi nilai gizi"],"direct_markers":["contains","contient","contiene","enthält","enthalt","contém","contem","bevat","содержит","يحتوي على","حاوی","شامل","함유","含む","含有","มีส่วนประกอบของ"],"caution_markers":["may contain","traces of","produced in a facility","processed in a facility","manufactured in a facility","peut contenir","traces de","puede contener","trazas de","kann enthalten","spuren von","può contenere","puo contenere","tracce di","pode conter","vestígios de","vestigios de","kan bevatten","sporen van","может содержать","следы","قد يحتوي على","آثار","ممکن است حاوی","ممکن است شامل","آثار","혼입가능","혼입 가능","함유가능","함유 가능","같은 제조시설","동일 제조시설","含む可能性","同一工場","可能含有","可能含","อาจมี","อาจมีส่วนประกอบของ","eser miktarda içerebilir","içerebilir","dapat mengandung"]}};
+const ALLERGENS=ONTOLOGY.allergens;
+const MARKERS=ONTOLOGY.label_markers;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const lang=$("#lang"),productsEl=$("#products"),analyze=$("#analyze"),result=$("#result"),loading=$("#loading"),productResults=$("#productResults"),calTotal=$("#calTotal");
+let custom=[],products=[{id:1,photos:[]}],nextId=2;
 
-<script type="module" src="./src/app.js?v=2.2.0"></script>
+const I={
+ en:{tag:"Understand the label before you eat.",hero:"Check one product or a whole basket.",sub:"Add several photos of the same product, or create separate product groups. Package language is detected automatically; analysis runs on this device.",profile:"What should we watch for?",profileSub:"Choose one or more allergens or ingredients you avoid.",milk:"Milk",egg:"Egg",peanut:"Peanut",treeNuts:"Tree nuts",soy:"Soy",wheat:"Wheat",sesame:"Sesame",fish:"Fish",shellfish:"Shellfish",add:"Add",products:"Add product photos",productsSub:"Up to 3 photos belong to one product. Use “Add another product” for a different item.",product:"Product",photosForSame:"Photos in this box are treated as the same product.",choose:"Take or choose photos",remove:"Remove",addProduct:"+ Add another product",tip1:"Include the ingredient/allergen statement.",tip2:"Include the nutrition panel if you want calories.",tip3:"Primary OCR runs first; extra language models load only when the label requires them.",analyze:"Analyze on this device",note:"Photos are processed in your browser and are not uploaded to an ALLER AI analysis server.",checking:"Checking products…",checkingSub:"Starting on-device OCR…",privacy:"Photos and your selected profile stay on this device during analysis.",footer:"ALLER AI is a decision-support prototype, not a medical guarantee. For severe allergies, verify the original label and manufacturer guidance.",noProfile:"Select at least one item to check.",addPhoto:"Add at least one product photo.",conflict:"Conflict detected",caution:"Caution",clear:"No listed conflict detected",mixed:"Products checked",reason:"Reason",packageCalories:"Estimated full-package calories",basis:"Calculation",totalCalories:"Estimated total for full packages",knownCalories:"Known calorie total",incompleteCalories:"Some products could not be included because the label did not provide enough information.",noCalories:"Full-package calories could not be calculated from the visible labels.",photoAdded:"Photo added",serverTitle:"On-device OCR could not start",serverBody:"The OCR engine or language data could not be loaded. Check your internet connection once, then try again.",autoLang:"Fast primary OCR with targeted multilingual verification — no package-language selection needed.",directMatches:"Direct matches",cautionMatches:"Precautionary matches",ocrCoverage:"OCR families used",progressPrimary:"Reading Korean/Latin label text on this device…",progressRotate:"Checking rotated label text on this device…",progressFallback:"Trying another writing system on this device…",progressNutrition:"Rechecking nutrition numbers on this device…"},
+ ko:{tag:"먹기 전에 라벨을 이해하세요.",hero:"한 제품부터 여러 제품까지 한 번에 확인하세요.",sub:"같은 제품은 여러 장의 사진을 추가하고, 다른 제품은 별도 제품으로 추가하세요. 분석은 이 기기에서 직접 실행됩니다.",profile:"무엇을 확인할까요?",profileSub:"피하고 싶은 알레르기 유발물질 또는 성분을 선택하세요.",milk:"우유",egg:"달걀",peanut:"땅콩",treeNuts:"견과류",soy:"대두",wheat:"밀",sesame:"참깨",fish:"생선",shellfish:"갑각류",add:"추가",products:"제품 사진 추가",productsSub:"한 제품당 최대 3장까지 추가할 수 있습니다. 다른 제품은 ‘다른 제품 추가’를 사용하세요.",product:"제품",photosForSame:"이 박스의 사진은 같은 제품으로 분석됩니다.",choose:"촬영 또는 사진 선택",remove:"삭제",addProduct:"+ 다른 제품 추가",tip1:"원재료/알레르기 표시가 보이게 촬영하세요.",tip2:"열량 계산을 원하면 영양정보도 포함하세요.",tip3:"기본 OCR을 먼저 실행하고, 라벨에 필요한 언어 모델만 추가로 불러옵니다.",analyze:"기기에서 제품 분석",note:"사진은 브라우저 안에서 처리되며 ALLER AI 분석 서버로 업로드되지 않습니다.",checking:"제품 확인 중…",checkingSub:"기기 내 OCR을 시작하는 중…",privacy:"분석 중 사진과 선택한 프로필은 이 기기에서 처리됩니다.",footer:"ALLER AI는 의사결정 보조 프로토타입이며 의학적 안전을 보장하지 않습니다. 중증 알레르기의 경우 원본 라벨과 제조사 안내를 확인하세요.",noProfile:"확인할 항목을 하나 이상 선택하세요.",addPhoto:"제품 사진을 하나 이상 추가하세요.",conflict:"주의 성분이 확인되었습니다",caution:"주의가 필요합니다",clear:"표시된 충돌 성분 없음",mixed:"제품 분석 결과",reason:"판단 근거",packageCalories:"전체 포장 예상 열량",basis:"계산 근거",totalCalories:"전체 제품 예상 열량 합계",knownCalories:"확인 가능한 열량 합계",incompleteCalories:"일부 제품은 라벨 정보가 부족해 합계에 포함되지 않았습니다.",noCalories:"보이는 라벨만으로 전체 포장 열량을 계산할 수 없습니다.",photoAdded:"사진 추가됨",serverTitle:"기기 내 OCR을 시작할 수 없습니다",serverBody:"OCR 엔진 또는 언어 데이터를 불러오지 못했습니다. 처음 한 번 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",autoLang:"빠른 기본 OCR + 필요한 언어만 추가 확인 — 제품 언어를 선택할 필요가 없습니다.",directMatches:"직접 확인된 항목",cautionMatches:"주의 표시 항목",ocrCoverage:"사용된 OCR 계열",progressPrimary:"이 기기에서 한국어·라틴계 라벨을 읽는 중…",progressRotate:"회전된 라벨 텍스트를 확인하는 중…",progressFallback:"이 기기에서 다른 문자 체계를 확인하는 중…",progressNutrition:"이 기기에서 영양정보 숫자를 다시 읽는 중…"}
+};
+
+function t(k){return(I[lang.value]||I.en)[k]||I.en[k]||k}
+function setLang(v){document.documentElement.lang=v;document.documentElement.dir="ltr";$$('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));localStorage.setItem('aller_lang',v);renderProducts()}
+lang.value=localStorage.getItem('aller_lang')||'en';if(!['en','ko'].includes(lang.value))lang.value='en';lang.onchange=()=>setLang(lang.value);
+
+function profile(){return{allergens:$$('#chips input:checked').map(x=>x.value),custom_avoid:[...custom]}}
+function save(){localStorage.setItem('aller_profile',JSON.stringify(profile()));update()}
+try{const p=JSON.parse(localStorage.getItem('aller_profile')||'{}');(p.allergens||[]).forEach(v=>{const x=$(`#chips input[value="${v}"]`);if(x)x.checked=true});custom=Array.isArray(p.custom_avoid)?p.custom_avoid:[]}catch{}
+$('#chips').onchange=save;
+function renderCustom(){const e=$('#customList');e.innerHTML='';custom.forEach((v,i)=>{const l=document.createElement('label');l.className='chip';l.innerHTML="<input type='checkbox' checked><span></span>";l.querySelector('span').textContent=v+' ×';l.onclick=x=>{x.preventDefault();custom.splice(i,1);renderCustom();save()};e.appendChild(l)})}
+$('#add').onclick=()=>{const v=$('#custom').value.trim();if(v&&!custom.some(x=>x.toLowerCase()===v.toLowerCase()))custom.push(v);$('#custom').value='';renderCustom();save()};
+$('#custom').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#add').click()}};
+
+function renderProducts(){
+ productsEl.innerHTML='';
+ products.forEach((p,idx)=>{
+  const box=document.createElement('div');box.className='product';
+  const top=document.createElement('div');top.className='ptop';
+  const left=document.createElement('div');left.innerHTML=`<div class="ptitle">${t('product')} ${idx+1}</div><div class="psub">${t('photosForSame')}</div>`;top.appendChild(left);
+  if(products.length>1){const rm=document.createElement('button');rm.className='removeProduct';rm.textContent=t('remove');rm.onclick=()=>{p.photos.forEach(x=>URL.revokeObjectURL(x.url));products.splice(idx,1);renderProducts();update()};top.appendChild(rm)}
+  const cap=document.createElement('div');cap.className='capture';const btn=document.createElement('button');btn.className='btn primary';btn.textContent=t('choose');const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;inp.hidden=true;btn.onclick=()=>inp.click();
+  inp.onchange=e=>{for(const f of [...e.target.files]){if(p.photos.length>=MAX_PHOTOS)break;if(f.type.startsWith('image/'))p.photos.push({file:f,url:URL.createObjectURL(f)})}inp.value='';renderProducts();update()};
+  const msg=document.createElement('p');msg.textContent=`${p.photos.length}/${MAX_PHOTOS} ${t('photoAdded')}`;cap.append(btn,inp,msg);
+  const ph=document.createElement('div');ph.className='photos';p.photos.forEach((photo,j)=>{const d=document.createElement('div');d.className='photo';const im=document.createElement('img');im.src=photo.url;const x=document.createElement('button');x.className='x';x.textContent='×';x.onclick=()=>{URL.revokeObjectURL(photo.url);p.photos.splice(j,1);renderProducts();update()};const b=document.createElement('div');b.className='added';b.textContent=t('photoAdded');d.append(im,x,b);ph.appendChild(d)});
+  box.append(top,cap,ph);productsEl.appendChild(box)
+ });
+ $('#addProduct').disabled=products.length>=MAX_PRODUCTS
+}
+$('#addProduct').onclick=()=>{if(products.length<MAX_PRODUCTS){products.push({id:nextId++,photos:[]});renderProducts();update()}};
+function update(){const p=profile(),hasPhoto=products.some(x=>x.photos.length);analyze.disabled=!(hasPhoto&&(p.allergens.length||p.custom_avoid.length))}
+
+function normalizeArabicPersian(s){return String(s||'').replace(/[يىئ]/g,'ی').replace(/ك/g,'ک').replace(/ؤ/g,'و').replace(/[ةۀ]/g,'ه').replace(/[أإٱ]/g,'ا').replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g,'')}
+function fold(s){s=String(s||'').normalize('NFKC').toLowerCase();s=normalizeArabicPersian(s);s=s.normalize('NFKD').replace(/\p{M}/gu,'');return s.replace(/[’`]/g,"'").replace(/\s+/g,' ').trim()}
+function compact(s){return fold(s).replace(/[\s\u200b\u200c\u200d]+/g,'')}
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function isWordScript(term){return /[a-z\u0370-\u03ff\u0400-\u052f\u0900-\u097f]/i.test(fold(term))}
+function containsTerm(text,term){const q=fold(term),txt=fold(text);if(!q)return false;if(isWordScript(q)){const r=new RegExp('(?:^|[^\\p{L}\\p{N}_])'+esc(q)+'(?:$|[^\\p{L}\\p{N}_])','iu');return r.test(txt)}return compact(txt).includes(compact(q))}
+function containsAny(text,terms){return (terms||[]).some(x=>containsTerm(text,x))}
+function declarationBlocks(text,marker,radius=190){const n=fold(text),m=fold(marker),out=[];let start=0;while(true){const p=n.indexOf(m,start);if(p<0)break;out.push(n.slice(Math.max(0,p-radius),Math.min(n.length,p+m.length+radius)));start=p+Math.max(1,m.length)}return out}
+function ingredientSection(text){const n=fold(text),starts=[];(MARKERS.ingredient_headings||[]).forEach(marker=>{const m=fold(marker),p=n.indexOf(m);if(p>=0)starts.push([p,m.length])});if(!starts.length)return'';starts.sort((a,b)=>a[0]-b[0]);const [p,len]=starts[0];let tail=n.slice(p+len);const stops=[...(MARKERS.nutrition_headings||[]),'storage','best before','customer service','보관방법','고객상담실','保存方法','保管方法','barcode'];const hits=[];stops.forEach(marker=>{const x=tail.indexOf(fold(marker));if(x>25)hits.push(x)});if(hits.length)tail=tail.slice(0,Math.min(...hits));return tail.slice(0,2200)}
+function classifyAlias(text,alias){if(!containsTerm(text,alias))return null;for(const marker of MARKERS.caution_markers||[])for(const block of declarationBlocks(text,marker))if(containsTerm(block,alias))return'caution';for(const marker of MARKERS.direct_markers||[])for(const block of declarationBlocks(text,marker,150))if(containsTerm(block,alias))return'direct';const section=ingredientSection(text);if(section&&containsTerm(section,alias))return'direct';return null}
+function allAliases(id){const out=[],item=ALLERGENS[id];if(!item)return out;Object.entries(item.aliases||{}).forEach(([lng,arr])=>(arr||[]).forEach(alias=>out.push([lng,alias])));return out}
+function scanProfile(sourceTexts,p){let direct=[],caution=[];for(const [family,text] of Object.entries(sourceTexts)){if(!text)continue;for(const id of p.allergens||[]){const item=ALLERGENS[id];if(!item)continue;let bd=null,bc=null;for(const [lng,alias] of allAliases(id)){const kind=classifyAlias(text,alias);if(kind==='direct'&&!bd)bd={allergen_id:id,allergen:item.label,term:alias,language:lng,ocr_family:family};else if(kind==='caution'&&!bc)bc={allergen_id:id,allergen:item.label,term:alias,language:lng,ocr_family:family}}if(bd)direct.push(bd);else if(bc)caution.push(bc)}for(const raw of p.custom_avoid||[]){const term=String(raw||'').trim();if(!term)continue;const kind=classifyAlias(text,term),hit={allergen_id:'custom',allergen:'Custom avoid',term,language:'user',ocr_family:family};if(kind==='direct')direct.push(hit);else if(kind==='caution')caution.push(hit)}}
+ const dedupe=items=>{const seen=new Set(),out=[];for(const x of items){const k=x.allergen_id+'|'+x.term;if(!seen.has(k)){seen.add(k);out.push(x)}}return out};direct=dedupe(direct);const directIds=new Set(direct.map(x=>x.allergen_id));caution=dedupe(caution).filter(x=>!directIds.has(x.allergen_id));return{direct,caution}}
+function labelEvidence(sourceTexts){const joined=Object.values(sourceTexts).join(' ');return{ingredient:containsAny(joined,MARKERS.ingredient_headings),nutrition:containsAny(joined,MARKERS.nutrition_headings),declaration:containsAny(joined,[...(MARKERS.direct_markers||[]),...(MARKERS.caution_markers||[])]),readable:compact(joined).length>=18}}
+
+function normalizeCalorieOCR(s){
+ s=normalizeArabicPersian(String(s||'').normalize('NFKC').toLowerCase())
+   .replace(/[’`]/g,"'").replace(/×/g,'x');
+ s=s.replace(/\bk\s*c\s*a\s*[l1i|!]\b/gi,'kcal')
+    .replace(/\bk\s*c\s*a\s*l\b/gi,'kcal');
+
+ // Nutrition-only OCR confusion recovery.
+ // Tesseract commonly reads the unit "g" as 9, 0, q, or s on package labels:
+ //   "253 g("  -> "253 9("
+ //   "100 g당" -> "100 0당" / "100 gS"
+ //   "5.8 g x 44" -> "5.8 9 x 44"
+ // These replacements are intentionally limited to numeric nutrition contexts.
+ s=s.replace(/\b100\s*[09qos]\s*당\b/gi,'100 g당');
+ s=s.replace(/\b100\s*g\s*[s5]\b/gi,'100 g');
+ s=s.replace(/\b100\s*[09qo]\s*(?=\d+\s*kcal|\s*kcal)/gi,'100 g ');
+ s=s.replace(/(\d+(?:[.,]\d+)?)\s*[09qo]\s*(?=\()/gi,'$1 g ');
+ s=s.replace(/(\d+(?:[.,]\d+)?)\s*[09qo]\s*x\s*(\d+)/gi,'$1 g x $2');
+ s=s.replace(/(\d)\s*[gq]\s*당/gi,'$1 g당').replace(/100\s*[gq]\b/gi,'100 g');
+
+ // Korean heading OCR: 총 내용량 is often recognized as 종 내용량.
+ s=s.replace(/종\s*내\s*용\s*[량양랑]/g,'총 내용량');
+
+ return s.replace(/\s+/g,' ').trim()
+}
+function numberOf(s){return Number(String(s).replace(/,/g,''))}
+const ENERGY='(?:kcal|킬로칼로리|千卡(?:路里)?|キロカロリー)';
+const WEIGHT_PATTERNS=[
+ /[총종]\s*내\s*용\s*[량양랑]\s*[:：]?\s*([\d,.]+)\s*g\b/i,/[총종]내용[량양랑]\s*[:：]?\s*([\d,.]+)\s*g\b/i,
+ /(?:net\s*(?:wt|weight)|total\s*(?:content|weight))\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:poids\s*net|peso\s*neto|nettogewicht|peso\s*liquido|peso\s*líquido)\s*[:：]?\s*([\d,.]+)\s*g\b/i,
+ /(?:масса\s*нетто|вес\s*нетто)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:الوزن\s*الصافي|الوزن\s*الصافى)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:وزن\s*خالص)\s*[:：]?\s*([\d,.]+)\s*g\b/i,
+ /(?:内容量|正味量)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:净含量|淨含量)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:शुद्ध\s*वजन)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:น้ำหนักสุทธิ)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:net\s*ağırlık|net\s*agirlik)\s*[:：]?\s*([\d,.]+)\s*g\b/i,/(?:berat\s*bersih)\s*[:：]?\s*([\d,.]+)\s*g\b/i];
+function findWeight(n){
+ const c=n.replace(/\s+/g,'');
+
+ let multi=null;
+ for(const r of [
+   /([\d,.]+)\s*g\s*x\s*(\d+)\s*(?:봉지|개|팩|packs?|pcs?|pieces?|sachets?|bars?|sticks?)/i,
+   /([\d,.]+)gx(\d+)(?:봉지|개|팩|packs?|pcs?|pieces?|sachets?|bars?|sticks?)/i
+ ]){
+   const m=n.match(r)||c.match(r);
+   if(m){
+     const unit=numberOf(m[1]),count=Number(m[2]),v=unit*count;
+     if(unit>0&&count>=2&&count<=1000&&v>=.5&&v<=50000){
+       multi=[v,'multipack_weight'];break
+     }
+   }
+ }
+
+ function recover(raw){
+   const rawText=String(raw||'').replace(/,/g,'');
+   const v=Number(rawText);
+   if(!(v>=.5&&v<=50000))return null;
+   if(!multi)return v;
+   const target=multi[0],tol=Math.max(15,target*.12);
+   if(Math.abs(v-target)<=tol)return v;
+
+   // Real observed OCR error: 253 g -> 8253 g.
+   // Recover a numeric suffix only when the independent multipack equation agrees.
+   const digits=rawText.replace(/[^\d.]/g,'');
+   for(let cut=1;cut<=Math.min(3,Math.max(0,digits.length-2));cut++){
+     const s=Number(digits.slice(cut));
+     if(Number.isFinite(s)&&Math.abs(s-target)<=tol)return s
+   }
+   return null
+ }
+
+ for(const r of WEIGHT_PATTERNS){
+   const m=n.match(r)||c.match(r);
+   if(m){
+     const v=recover(m[1]);
+     if(v!=null)return[v,numberOf(m[1])===v?'explicit_total_weight':'explicit_total_weight_ocr_recovered']
+   }
+ }
+
+ const basisRe=/100\s*g(?:\s*당|\s*(?:per|pour|por|pro))?/ig;
+ let bm;
+ while((bm=basisRe.exec(n))){
+   const basisPos=bm.index;
+   const before=n.slice(Math.max(0,basisPos-180),basisPos);
+   const after=n.slice(basisPos,Math.min(n.length,basisPos+120));
+   if(!new RegExp('[\\d,.]+\\s*'+ENERGY+'\\b','i').test(after))continue;
+
+   const grams=[...before.matchAll(/([\d,.]+)\s*g\b/ig)]
+     .map(m=>({raw:m[1],v:numberOf(m[1]),pos:m.index}))
+     .filter(x=>x.v>=10&&x.v<=50000&&Math.abs(x.v-100)>.01);
+
+   if(multi){
+     const candidates=[];
+     for(const g of grams){
+       const v=recover(g.raw);
+       if(v!=null)candidates.push({v,diff:Math.abs(v-multi[0]),pos:g.pos})
+     }
+     if(candidates.length){
+       candidates.sort((a,b)=>a.diff-b.diff||b.pos-a.pos);
+       return[candidates[0].v,'structural_total_weight_crosschecked']
+     }
+   }else if(grams.length){
+     const chosen=grams.sort((a,b)=>b.pos-a.pos)[0];
+     if(chosen.v<=5000)return[chosen.v,'structural_total_weight']
+   }
+ }
+
+ if(multi)return multi;
+ return[null,null]
+}
+function kcalMatches(n){const re=new RegExp('([\\d,.]+)\\s*'+ENERGY+'\\b','gi'),out=[];let m;while((m=re.exec(n))){const v=numberOf(m[1]);if(v>=1&&v<=1500)out.push([m.index,v])}return out}
+function findReferenceEnergy(n){const c=n.replace(/\s+/g,'');for(const [pat,mode] of [[new RegExp('([\\d,.]+)\\s*g\\s*(?:당|per|pour|por|pro)?\\s*[:：]?\\s*([\\d,.]+)\\s*'+ENERGY+'\\b','i'),'g'],[new RegExp('([\\d,.]+)g(?:당|per|pour|por|pro)?[:：]?([\\d,.]+)'+ENERGY,'i'),'g'],[new RegExp('([\\d,.]+)\\s*'+ENERGY+'\\s*(?:/|per|pour|por|pro)\\s*([\\d,.]+)\\s*g\\b','i'),'k']]){const m=n.match(pat)||c.match(pat);if(m){const bg=mode==='g'?numberOf(m[1]):numberOf(m[2]),kc=mode==='g'?numberOf(m[2]):numberOf(m[1]);if(bg>=.5&&bg<=50000&&kc>=1&&kc<=1500)return[bg,kc,'direct_reference_pair']}}
+ const hm=n.match(/100\s*g\s*당/i)||c.match(/100g당/i)||n.match(/100\s*g\s*(?:per|pour|por|pro)/i)||n.match(/(?:per|pour|por|pro)\s*100\s*g/i)||n.match(/100\s*g/i);
+ if(hm){
+   const hp=hm.index||0;
+   const near=n.slice(hp,Math.min(n.length,hp+180));
+   const nearVals=kcalMatches(near);
+   if(nearVals.length)return[100,nearVals[0][1],'nearby_100g_reference'];
+   const vals=kcalMatches(n);
+   if(vals.length===1)return[100,vals[0][1],'layout_100g_reference']
+ }if(containsAny(n,MARKERS.nutrition_headings)&&(n.match(/100\s*g/i)||c.includes('100g'))){const vals=[...new Set(kcalMatches(n).map(x=>x[1]))];if(vals.length===1)return[100,vals[0],'single_kcal_with_100g_basis']}return[null,null,null]}
+function extractCalories(text){const n=normalizeCalorieOCR(text),[totalG,wm]=findWeight(n),[refG,refKcal,em]=findReferenceEnergy(n);let explicit=null;for(const r of [new RegExp('총\\s*(?:열량|칼로리)\\s*[:：]?\\s*([\\d,.]+)\\s*'+ENERGY+'\\b','i'),new RegExp('(?:total\\s*(?:energy|calories)|energy\\s*per\\s*pack)\\s*[:：]?\\s*([\\d,.]+)\\s*'+ENERGY+'\\b','i'),new RegExp('(?:总热量|總熱量)\\s*[:：]?\\s*([\\d,.]+)\\s*'+ENERGY+'\\b','i')]){const m=n.match(r);if(m){const v=numberOf(m[1]);if(v>=1&&v<=100000){explicit=v;break}}}let packageKcal=null,basis=null,method=null;if(explicit!=null){packageKcal=Math.round(explicit);basis=`Label states total energy: ${explicit} kcal`;method='explicit_total_energy'}else if(totalG!=null&&refG!=null&&refKcal!=null&&refG>0){packageKcal=Math.round(refKcal*totalG/refG);basis=`Calculated from ${refKcal} kcal / ${refG} g × ${totalG} g`;method=wm+'+'+em}if(method!=='explicit_total_energy'&&packageKcal!=null&&packageKcal>25000){packageKcal=null;basis=null;method='rejected_implausible_computed_energy'}
+if(!(packageKcal>0&&packageKcal<100000))packageKcal=null;return{package_kcal:packageKcal,basis,total_weight_g:totalG,reference_kcal:refKcal,reference_g:refG,method}}
+
+function preprocess(file,enhanced=false){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{try{
+ const target=enhanced?2600:1700;
+ const scale=Math.min(enhanced?2.0:1,target/Math.max(img.naturalWidth,img.naturalHeight));
+ const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+ const c=document.createElement('canvas');c.width=w;c.height=h;
+ const ctx=c.getContext('2d',{willReadFrequently:true});
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(img,0,0,w,h);
+ if(enhanced){
+   const d=ctx.getImageData(0,0,w,h),a=d.data;
+   let min=255,max=0;
+   for(let i=0;i<a.length;i+=4){
+     const y=.299*a[i]+.587*a[i+1]+.114*a[i+2];
+     if(y<min)min=y;if(y>max)max=y;
+   }
+   const span=Math.max(32,max-min);
+   for(let i=0;i<a.length;i+=4){
+     const y=.299*a[i]+.587*a[i+1]+.114*a[i+2];
+     let v=(y-min)*255/span;
+     v=(v-128)*1.55+128;
+     if(v<0)v=0;if(v>255)v=255;
+     a[i]=a[i+1]=a[i+2]=v;
+   }
+   ctx.putImageData(d,0,0);
+ }
+ URL.revokeObjectURL(url);resolve(c)
+}catch(e){URL.revokeObjectURL(url);reject(e)}};img.onerror=e=>{URL.revokeObjectURL(url);reject(e)};img.src=url})}
+
+function rotateCanvas(src,deg){
+ const rad=((deg%360)+360)%360;
+ if(rad===0)return src;
+ const c=document.createElement('canvas');
+ if(rad===90||rad===270){c.width=src.height;c.height=src.width}else{c.width=src.width;c.height=src.height}
+ const ctx=c.getContext('2d',{willReadFrequently:true});
+ ctx.translate(c.width/2,c.height/2);
+ ctx.rotate(rad*Math.PI/180);
+ ctx.drawImage(src,-src.width/2,-src.height/2);
+ return c
+}
+function setProgress(txt){const e=$('#loading span');if(e)e.textContent=txt}
+async function makeWorker(langs,label,params=null){
+ if(!window.Tesseract)throw new Error('Tesseract.js failed to load');
+ const w=await Tesseract.createWorker(langs,1,{logger:m=>{if(m&&m.status&&typeof m.progress==='number'){setProgress(`${label} · ${Math.round(m.progress*100)}%`)}}});
+ if(params)await w.setParameters(params);
+ return w
+}
+async function ocrFiles(worker,photos,enhanced=false,rotation=0){
+ let text='';
+ for(const photo of photos){
+   const base=await preprocess(photo.file,enhanced);
+   const canvas=rotation?rotateCanvas(base,rotation):base;
+   const r=await worker.recognize(canvas);
+   text+='\n'+(r.data&&r.data.text?r.data.text:'')
+ }
+ return text.trim()
+}
+
+
+const PANEL_HINTS=[
+ {id:'arabic',label:'Persian / Arabic panel',langs:['fas','ara'],test:txt=>/\b(?:PER|ARB)\b/.test(txt)||/\b(?:Persian|Farsi|Arabic)\b/i.test(txt)},
+ {id:'cyrillic',label:'Russian / Cyrillic panel',langs:['rus'],test:txt=>/\bRU\b/.test(txt)||/\bRussian\b/i.test(txt)},
+ {id:'cjk',label:'Chinese / Japanese panel',langs:['chi_sim','jpn'],test:txt=>/\b(?:CHN|CN|JPN|JP)\b/.test(txt)||/\b(?:Chinese|Japanese)\b/i.test(txt)},
+ {id:'devanagari',label:'Hindi / Devanagari panel',langs:['hin'],test:txt=>/\bHI\b/.test(txt)||/\bHindi\b/i.test(txt)},
+ {id:'thai',label:'Thai panel',langs:['tha'],test:txt=>/\bTH\b/.test(txt)||/\bThai\b/i.test(txt)}
+]
+function panelHintsFor(s){
+ const txt=Object.values(s.sources||{}).join('\n');
+ return PANEL_HINTS.filter(h=>h.test(txt))
+}
+function panelVerifiedFromText(text){
+ const ev=labelEvidence({'panel':text||''});
+ return !!(ev.ingredient||ev.declaration)
+}
+const FALLBACKS=[
+ {label:'Persian / Arabic family',langs:['fas','ara']},
+ {label:'Russian / Cyrillic family',langs:['rus']},
+ {label:'Hindi / Devanagari family',langs:['hin']},
+ {label:'Chinese / Japanese family',langs:['chi_sim','jpn']},
+ {label:'Thai family',langs:['tha']}
+]
+
+async function analyzeOnDevice(p,active){
+ const state=new Map(active.map((prod,idx)=>[idx+1,{
+ photos:prod.photos,
+ sources:{},
+ calorieText:'',
+ families:[],
+ preferredRotation:0,
+ requiredPanels:[],
+ verifiedPanels:[]
+}]))
+ setProgress(t('progressPrimary'));
+ let worker=await makeWorker(['kor','eng','fra'],'Korean / Latin OCR');
+ try{for(const [pid,s] of state){const txt=await ocrFiles(worker,s.photos,false);s.sources['Korean + Latin on-device']=txt;s.calorieText+=' '+txt;s.families.push('Korean + Latin on-device')}}finally{await worker.terminate()}
+
+ let unresolved=[];for(const [pid,s] of state){const hit=scanProfile(s.sources,p),ev=labelEvidence(s.sources);if(!hit.direct.length&&!hit.caution.length&&!ev.ingredient)unresolved.push(pid)}
+
+ // Rotation recovery before trying every language family.
+ // Many package-back photos are captured sideways. Browser Tesseract often fails
+ // to infer orientation on dense label text, so retry 90° and 270° using the
+ // lightweight primary OCR first. Stop per product as soon as ingredient evidence
+ // or a selected allergen match is found.
+ if(unresolved.length){
+   setProgress(t('progressRotate'));
+   let rw=await makeWorker(['kor','eng','fra'],'Rotated Korean / Latin OCR');
+   try{
+     for(const deg of [90,270]){
+       for(const pid of [...unresolved]){
+         const s=state.get(pid);
+         const txt=await ocrFiles(rw,s.photos,false,deg);
+         s.sources[`Korean + Latin rotated ${deg}°`]=txt;
+         s.calorieText+=' '+txt;
+         s.families.push(`Korean + Latin rotated ${deg}°`);
+         const hit=scanProfile(s.sources,p),ev=labelEvidence(s.sources);
+         if(hit.direct.length||hit.caution.length||ev.ingredient){
+           s.preferredRotation=deg;
+           unresolved=unresolved.filter(x=>x!==pid)
+         }
+       }
+       if(!unresolved.length)break
+     }
+   }finally{await rw.terminate()}
+ }
+
+ // Mandatory verification of explicitly labelled language panels.
+ // A multilingual package must NOT be declared "No listed conflict" merely
+ // because the English panel was readable. If primary OCR sees tags such as
+ // PER / ARB / RU, those panels are checked even after an English ingredient
+ // list has already been confirmed.
+ const hintedJobs=[];
+ for(const [pid,s] of state){
+   const hints=panelHintsFor(s);
+   s.requiredPanels=hints.map(h=>h.id);
+   for(const h of hints)hintedJobs.push({pid,h})
+ }
+
+ for(const h of PANEL_HINTS){
+   const jobs=hintedJobs.filter(j=>j.h.id===h.id);
+   if(!jobs.length)continue;
+   setProgress(`${t('progressFallback')} ${h.label}`);
+   let hw=null;
+   try{
+     hw=await makeWorker(
+       h.langs,
+       h.label,
+       {tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'}
+     );
+     for(const {pid} of jobs){
+       const s=state.get(pid);
+       const deg=s.preferredRotation||0;
+       let txt=await ocrFiles(hw,s.photos,false,deg);
+
+       // If the labelled panel was not structurally verified, retry as sparse text.
+       if(!panelVerifiedFromText(txt)){
+         await hw.setParameters({
+           tessedit_pageseg_mode:'11',
+           preserve_interword_spaces:'1'
+         });
+         const sparse=await ocrFiles(hw,s.photos,false,deg);
+         txt += '\n'+sparse;
+         await hw.setParameters({
+           tessedit_pageseg_mode:'6',
+           preserve_interword_spaces:'1'
+         });
+       }
+
+       const key=`${h.label}${deg?` rotated ${deg}°`:''}`;
+       s.sources[key]=txt;
+       s.calorieText+=' '+txt;
+       s.families.push(key);
+
+       if(panelVerifiedFromText(txt) && !s.verifiedPanels.includes(h.id)){
+         s.verifiedPanels.push(h.id)
+       }
+     }
+   }catch(e){
+     console.warn('Hinted panel OCR skipped',h.label,e)
+   }finally{
+     if(hw)await hw.terminate()
+   }
+ }
+
+ // Recompute unresolved only after explicitly labelled panels have been checked.
+ unresolved=[];
+ for(const [pid,s] of state){
+   const hit=scanProfile(s.sources,p),ev=labelEvidence(s.sources);
+   if(!hit.direct.length&&!hit.caution.length&&!ev.ingredient)unresolved.push(pid)
+ }
+
+ for(const fb of FALLBACKS){if(!unresolved.length)break;setProgress(`${t('progressFallback')} ${fb.label}`);let w=null;try{w=await makeWorker(fb.langs,fb.label);for(const pid of [...unresolved]){
+ const s=state.get(pid);
+ let txt=await ocrFiles(w,s.photos,false);
+ s.sources[fb.label]=txt;s.calorieText+=' '+txt;s.families.push(fb.label);
+ let hit=scanProfile(s.sources,p),ev=labelEvidence(s.sources);
+ if(!(hit.direct.length||hit.caution.length||ev.ingredient)){
+   const t90=await ocrFiles(w,s.photos,false,90);
+   s.sources[fb.label+' rotated 90°']=t90;
+   s.calorieText+=' '+t90;
+   s.families.push(fb.label+' rotated 90°');
+   hit=scanProfile(s.sources,p);ev=labelEvidence(s.sources)
+ }
+ if(hit.direct.length||hit.caution.length||ev.ingredient)unresolved=unresolved.filter(x=>x!==pid)
+}}catch(e){console.warn('OCR fallback skipped',fb.label,e)}finally{if(w)await w.terminate()}}
+
+ // Dedicated nutrition recovery.
+ // Do this whenever full-package calories are still unknown. The pass is separate
+ // from allergen decisions, so lower-quality numeric OCR cannot create an allergen hit.
+ const calorieRetry=[];
+ for(const [pid,s] of state){
+   const cal=extractCalories(s.calorieText);
+   if(cal.package_kcal==null)calorieRetry.push(pid)
+ }
+ if(calorieRetry.length){
+   setProgress(t('progressNutrition'));
+   let w=await makeWorker(
+     ['kor','eng'],
+     'Nutrition OCR',
+     {
+       tessedit_pageseg_mode:'6',
+       preserve_interword_spaces:'1'
+     }
+   );
+   try{
+     // Pass A: assume a dense nutrition block.
+     for(const pid of calorieRetry){
+       const s=state.get(pid);
+       const txt=await ocrFiles(w,s.photos,true);
+       s.calorieText+=' '+txt;
+     }
+
+     // Pass B only for products still unresolved: sparse-text mode often recovers
+     // isolated lines such as "100 g당 485 kcal" that PSM 6 damages.
+     const sparse=[];
+     for(const pid of calorieRetry){
+       if(extractCalories(state.get(pid).calorieText).package_kcal==null)sparse.push(pid)
+     }
+     if(sparse.length){
+       await w.setParameters({
+         tessedit_pageseg_mode:'11',
+         preserve_interword_spaces:'1'
+       });
+       for(const pid of sparse){
+         const s=state.get(pid);
+         const txt=await ocrFiles(w,s.photos,true);
+         s.calorieText+=' '+txt;
+       }
+     }
+   }finally{await w.terminate()}
+ }
+
+ const out=[];for(const [pid,s] of state){
+ const {direct,caution}=scanProfile(s.sources,p),ev=labelEvidence(s.sources),cal=extractCalories(s.calorieText);
+ const missingPanels=(s.requiredPanels||[]).filter(x=>!(s.verifiedPanels||[]).includes(x));
+ const base={
+   product_id:pid,label:`Product ${pid}`,calories:cal,
+   ocr_families_used:s.families,direct_matches:direct,caution_matches:caution,
+   required_panels:s.requiredPanels||[],verified_panels:s.verifiedPanels||[]
+ };
+ if(direct.length)out.push({...base,status:'conflict',message:`Selected ingredient conflict detected: ${[...new Set(direct.map(x=>x.allergen))].join(', ')}.`,reason:'Detected as a listed ingredient or direct allergen declaration.'});
+ else if(caution.length)out.push({...base,status:'caution',message:`Precautionary cross-contact warning detected: ${[...new Set(caution.map(x=>x.allergen))].join(', ')}.`,reason:'Detected in a precautionary statement such as may contain / 혼입가능.'});
+ else if(missingPanels.length)out.push({...base,status:'ingredient_not_confirmed',message:'A multilingual package was detected, but not every labelled ingredient panel could be verified on this device.',reason:'ALLER AI will not report “No listed conflict” until the detected language panels are checked.'});
+ else if(!ev.readable)out.push({...base,status:'unreadable',message:'Not enough readable label text was detected.',reason:''});
+ else if(ev.ingredient)out.push({...base,status:'no_listed_conflict',message:'No selected conflict was found in the ingredient text checked on this device.',reason:''});
+ else if(ev.declaration)out.push({...base,status:'ingredient_not_confirmed',message:'An allergen declaration was checked, but the complete ingredient list was not verified.',reason:''});
+ else if(ev.nutrition)out.push({...base,status:'nutrition_panel',message:'Nutrition information was read, but the complete ingredient list was not confirmed.',reason:''});
+ else out.push({...base,status:'ingredient_not_confirmed',message:'The on-device OCR engine could not confidently confirm an ingredient list.',reason:''})
+}
+ const known=out.filter(x=>x.calories&&x.calories.package_kcal!=null),total=known.length?known.reduce((a,x)=>a+x.calories.package_kcal,0):null;return{status:'ok',products:out,summary:{total_package_kcal:total,calories_complete:known.length===out.length}}
+}
+
+function kindFor(status){if(status==='conflict')return'danger';if(status==='caution')return'warn';if(status==='no_listed_conflict')return'ok';return''}
+function addEv(parent,label,value){if(value===undefined||value===null||value==='')return;const r=document.createElement('div');r.className='ev';const a=document.createElement('span');a.textContent=label;const b=document.createElement('strong');b.textContent=value;r.append(a,b);parent.appendChild(r)}
+function allergenLabel(hit){const map={milk:'milk',egg:'egg',peanut:'peanut',tree_nuts:'treeNuts',soy:'soy',wheat:'wheat',sesame:'sesame',fish:'fish',shellfish:'shellfish'};if(hit&&map[hit.allergen_id])return t(map[hit.allergen_id]);if(hit&&hit.allergen_id==='custom')return lang.value==='ko'?'사용자 지정':(hit.allergen||'Custom avoid');return hit&&hit.allergen?hit.allergen:''}
+function localizedStatus(status){if(lang.value!=='ko'){if(status==='conflict')return t('conflict');if(status==='caution')return t('caution');if(status==='no_listed_conflict')return t('clear');if(status==='ingredient_not_confirmed')return'Ingredient list not confirmed';if(status==='nutrition_panel')return'Nutrition panel detected';if(status==='unreadable')return'Please retake the label photo';return String(status||'').replaceAll('_',' ')}const map={conflict:'주의 성분 확인',caution:'교차접촉 주의',no_listed_conflict:'표시된 충돌 성분 없음',ingredient_not_confirmed:'원재료 목록 확인 필요',nutrition_panel:'영양정보 확인됨',unreadable:'라벨 재촬영 필요'};return map[status]||String(status||'').replaceAll('_',' ')}
+function localizedProductMessage(p){const dn=[...new Set((p.direct_matches||[]).map(allergenLabel))].filter(Boolean),cn=[...new Set((p.caution_matches||[]).map(allergenLabel))].filter(Boolean);if(lang.value!=='ko')return p.message||'';if(p.status==='conflict')return`선택한 주의 성분이 원재료 또는 직접 알레르기 표시에서 확인되었습니다: ${dn.join(', ')}.`;if(p.status==='caution')return`교차접촉 가능성에 대한 주의 표시가 확인되었습니다: ${cn.join(', ')}.`;if(p.status==='no_listed_conflict')return'확인된 원재료 정보에서 선택한 주의 성분이 발견되지 않았습니다.';if(p.status==='ingredient_not_confirmed'){
+ if((p.required_panels||[]).some(x=>!(p.verified_panels||[]).includes(x)))return'다국어 제품 라벨이 감지되었지만 표시된 모든 언어의 원재료 정보를 확인하지 못했습니다. 모든 표시 언어를 확인하기 전에는 “충돌 성분 없음”으로 판단하지 않습니다.';
+ return'알레르기 관련 표시는 확인했지만 전체 원재료 목록까지는 확인하지 못했습니다.'
+};if(p.status==='nutrition_panel')return'영양정보는 확인했지만 전체 원재료 목록은 확인되지 않았습니다.';if(p.status==='unreadable')return'읽을 수 있는 라벨 텍스트가 충분하지 않습니다. 원재료 표시가 선명하게 보이도록 다시 촬영해 주세요.';return p.message||''}
+function localizedReason(p){if(lang.value!=='ko')return p.reason||'';if(p.status==='conflict')return'원재료 또는 직접 알레르기 표시에서 확인되었습니다.';if(p.status==='caution')return'‘혼입 가능’, ‘may contain’과 같은 교차접촉 주의 문구에서 확인되었습니다.';
+ if(p.status==='ingredient_not_confirmed'&&(p.required_panels||[]).some(x=>!(p.verified_panels||[]).includes(x)))return'표시된 모든 언어의 원재료 패널이 확인될 때까지 안전한 결과로 분류하지 않습니다.';
+ return p.reason||''}
+function localizedBasis(c){if(!c)return'';if(c.reference_kcal!=null&&c.reference_g!=null&&c.total_weight_g!=null){if(lang.value==='ko')return`${c.reference_g} g당 ${c.reference_kcal} kcal × 총 내용량 ${c.total_weight_g} g 기준`;return`Calculated from ${c.reference_kcal} kcal / ${c.reference_g} g × ${c.total_weight_g} g`}if(c.package_kcal!=null)return lang.value==='ko'?'라벨에 표시된 전체 열량 기준':(c.basis||'Label total energy');return''}
+function showResults(d){loading.classList.remove('show');result.classList.add('show');productResults.innerHTML='';const ps=d.products||[],s=d.summary||{},conflicts=ps.filter(x=>x.status==='conflict').length,cautions=ps.filter(x=>x.status==='caution').length;$('#ricon').textContent=conflicts||cautions?'!':'✓';$('#rtitle').textContent=conflicts?localizedStatus('conflict'):cautions?localizedStatus('caution'):t('mixed');$('#rbody').textContent=lang.value==='ko'?`제품 ${ps.length}개 · 주의 성분 ${conflicts}건 · 교차접촉 주의 ${cautions}건`:`${ps.length} ${ps.length===1?'Product':'Products'} · ${conflicts} ${t('conflict')} · ${cautions} ${t('caution')}`;if(s.total_package_kcal!=null){calTotal.style.display='block';const title=s.calories_complete?t('totalCalories'):t('knownCalories');calTotal.innerHTML=`<strong>${Math.round(s.total_package_kcal)} kcal</strong><span>${title}${s.calories_complete?'':' · '+t('incompleteCalories')}</span>`}else{calTotal.style.display='block';calTotal.innerHTML=`<span>${t('noCalories')}</span>`}
+ ps.forEach((p,idx)=>{const box=document.createElement('div');box.className=`presult ${kindFor(p.status)}`;const top=document.createElement('div');top.className='prtop';const title=document.createElement('div');title.className='prtitle';title.textContent=`${t('product')} ${idx+1}`;const badge=document.createElement('div');badge.className='badge';badge.textContent=localizedStatus(p.status);top.append(title,badge);box.appendChild(top);const msg=document.createElement('div');msg.className='prmsg';msg.textContent=localizedProductMessage(p);box.appendChild(msg);const ev=document.createElement('div');ev.className='evidence';addEv(ev,t('directMatches'),(p.direct_matches||[]).map(x=>`${allergenLabel(x)} (${x.term})`).join(' · '));addEv(ev,t('cautionMatches'),(p.caution_matches||[]).map(x=>`${allergenLabel(x)} (${x.term})`).join(' · '));addEv(ev,t('reason'),localizedReason(p));addEv(ev,t('ocrCoverage'),(p.ocr_families_used||[]).join(' · '));if(ev.children.length)box.appendChild(ev);const c=p.calories||{},kcal=document.createElement('div');kcal.className='kcal';if(c.package_kcal!=null){kcal.textContent=`${t('packageCalories')}: ${Math.round(c.package_kcal)} kcal`;const basis=localizedBasis(c);if(basis){const sm=document.createElement('small');sm.textContent=`${t('basis')}: ${basis}`;kcal.appendChild(sm)}}else kcal.textContent=t('noCalories');box.appendChild(kcal);productResults.appendChild(box)});result.scrollIntoView({behavior:'smooth',block:'nearest'})}
+
+analyze.onclick=async()=>{const p=profile();if(!(p.allergens.length||p.custom_avoid.length)){alert(t('noProfile'));return}const active=products.filter(x=>x.photos.length);if(!active.length){alert(t('addPhoto'));return}result.classList.remove('show');loading.classList.add('show');analyze.disabled=true;try{const d=await analyzeOnDevice(p,active);showResults(d)}catch(e){console.error(e);loading.classList.remove('show');alert(t('serverTitle')+'\n'+t('serverBody'))}finally{update()}};
+
+// Make the two visible tips explicitly on-device.
+const tips=$$('.tip');if(tips[0])tips[0].querySelector('strong').textContent='🌐 On-device multilingual OCR';
+renderCustom();setLang(lang.value);renderProducts();update();
+})();
+</script>
 </body>
 </html>
