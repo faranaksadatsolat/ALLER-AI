@@ -1,5 +1,5 @@
 
-import { ONTOLOGY } from "./ontology.js";
+import { ONTOLOGY } from "./ontology.js?v=2.2.0";
 
 export const ALLERGENS = ONTOLOGY.allergens;
 export const MARKERS = ONTOLOGY.label_markers;
@@ -572,57 +572,124 @@ const WEIGHT_PATTERNS = [
   /(?:berat\s*bersih)\s*[:：]?\s*([\d,.]+)\s*g\b/i,
 ];
 
-function findWeight(n) {
-  const c = n.replace(/\s+/g, "");
-  for (const r of WEIGHT_PATTERNS) {
-    const m = n.match(r) || c.match(r);
-    if (m) {
-      const v = numberOf(m[1]);
-      if (v >= 0.5 && v <= 50000) return [v, "explicit_total_weight"];
-    }
-  }
-
-  let multi = null;
+function findMultipackWeight(n, c) {
   for (const r of [
     /([\d,.]+)\s*g\s*x\s*(\d+)\s*(?:봉지|개|팩|packs?|pcs?|pieces?|sachets?|bars?|sticks?)/i,
     /([\d,.]+)gx(\d+)(?:봉지|개|팩|packs?|pcs?|pieces?|sachets?|bars?|sticks?)/i,
   ]) {
     const m = n.match(r) || c.match(r);
     if (m) {
-      const v = numberOf(m[1]) * Number(m[2]);
-      if (v >= 0.5 && v <= 50000) {
-        multi = [v, "multipack_weight"];
-        break;
+      const unit = numberOf(m[1]);
+      const count = Number(m[2]);
+      const v = unit * count;
+      if (unit > 0 && count >= 2 && count <= 1000 && v >= 0.5 && v <= 50000) {
+        return [v, "multipack_weight", unit, count];
       }
     }
   }
+  return [null, null, null, null];
+}
 
+function recoverExplicitWeight(raw, multiG) {
+  const rawText = String(raw || "").replace(/,/g, "");
+  const v = Number(rawText);
+  if (!(v >= 0.5 && v <= 50000)) return null;
+
+  if (multiG == null) return v;
+
+  const tolerance = Math.max(15, multiG * 0.12);
+  if (Math.abs(v - multiG) <= tolerance) return v;
+
+  // OCR sometimes prepends a stray digit to a perfectly visible package weight:
+  // printed "253 g" -> OCR "8253 g".
+  // When a multipack equation independently gives ~255 g, try numeric suffixes
+  // and accept only a suffix that agrees with that independent evidence.
+  const digits = rawText.replace(/[^\d.]/g, "");
+  for (let cut = 1; cut <= Math.min(3, Math.max(0, digits.length - 2)); cut++) {
+    const suffix = Number(digits.slice(cut));
+    if (
+      Number.isFinite(suffix) &&
+      suffix >= 0.5 &&
+      suffix <= 50000 &&
+      Math.abs(suffix - multiG) <= tolerance
+    ) {
+      return suffix;
+    }
+  }
+
+  // Explicit weight conflicts strongly with independent multipack evidence.
+  // Do not trust it.
+  return null;
+}
+
+function findWeight(n) {
+  const c = n.replace(/\s+/g, "");
+  const [multiG, multiMethod] = findMultipackWeight(n, c);
+
+  // Prefer a printed total weight only when it is self-consistent with any
+  // independent multipack equation visible on the same label.
+  for (const r of WEIGHT_PATTERNS) {
+    const m = n.match(r) || c.match(r);
+    if (!m) continue;
+
+    const recovered = recoverExplicitWeight(m[1], multiG);
+    if (recovered != null) {
+      const original = numberOf(m[1]);
+      const method =
+        Math.abs(recovered - original) > 0.001
+          ? "explicit_total_weight_ocr_recovered"
+          : "explicit_total_weight";
+      return [recovered, method];
+    }
+  }
+
+  // Structural recovery near the "100 g ... kcal" line.
   const basisRe = /100\s*g(?:\s*당|\s*(?:per|pour|por|pro))?/gi;
   let bm;
   while ((bm = basisRe.exec(n))) {
     const basisPos = bm.index;
     const before = n.slice(Math.max(0, basisPos - 180), basisPos);
     const after = n.slice(basisPos, Math.min(n.length, basisPos + 120));
+
     if (!new RegExp("[\\d,.]+\\s*" + ENERGY + "\\b", "i").test(after)) continue;
 
     const grams = [...before.matchAll(/([\d,.]+)\s*g\b/gi)]
-      .map((m) => ({ v: numberOf(m[1]), pos: m.index }))
+      .map((m) => ({ raw: m[1], v: numberOf(m[1]), pos: m.index }))
       .filter((x) => x.v >= 10 && x.v <= 50000 && Math.abs(x.v - 100) > 0.01);
 
-    if (grams.length) {
-      let chosen = null;
-      if (multi) {
-        chosen = grams
-          .map((x) => ({ ...x, diff: Math.abs(x.v - multi[0]) }))
-          .filter((x) => x.diff <= Math.max(15, multi[0] * 0.12))
-          .sort((a, b) => a.diff - b.diff || b.pos - a.pos)[0];
+    if (!grams.length) continue;
+
+    if (multiG != null) {
+      const tolerance = Math.max(15, multiG * 0.12);
+      const candidates = [];
+
+      for (const g of grams) {
+        const recovered = recoverExplicitWeight(g.raw, multiG);
+        if (recovered != null && Math.abs(recovered - multiG) <= tolerance) {
+          candidates.push({
+            v: recovered,
+            diff: Math.abs(recovered - multiG),
+            pos: g.pos,
+          });
+        }
       }
-      if (!chosen) chosen = grams.sort((a, b) => b.pos - a.pos)[0];
-      if (chosen) return [chosen.v, "structural_total_weight"];
+
+      if (candidates.length) {
+        candidates.sort((a, b) => a.diff - b.diff || b.pos - a.pos);
+        return [candidates[0].v, "structural_total_weight_crosschecked"];
+      }
+    } else {
+      // Without independent evidence, use only the closest preceding plausible
+      // value. Extreme values are not automatically accepted as a snack-package
+      // total just because OCR produced digits.
+      const chosen = grams.sort((a, b) => b.pos - a.pos)[0];
+      if (chosen && chosen.v <= 5000) {
+        return [chosen.v, "structural_total_weight"];
+      }
     }
   }
 
-  if (multi) return multi;
+  if (multiG != null) return [multiG, multiMethod];
   return [null, null];
 }
 
@@ -718,6 +785,20 @@ export function extractCaloriesFromText(text) {
     packageKcal = Math.round((refKcal * totalG) / refG);
     basis = `Calculated from ${refKcal} kcal / ${refG} g × ${totalG} g`;
     method = `${wm}+${em}`;
+  }
+
+  // Consumer-safety plausibility guard:
+  // never display an extreme computed value unless the total energy itself was
+  // explicitly printed on the label. Ambiguous OCR should become "unknown",
+  // not a wildly wrong calorie number.
+  if (
+    method !== "explicit_total_energy" &&
+    packageKcal != null &&
+    (packageKcal <= 0 || packageKcal > 25000)
+  ) {
+    packageKcal = null;
+    basis = null;
+    method = "rejected_implausible_computed_energy";
   }
 
   if (!(packageKcal > 0 && packageKcal < 100000)) packageKcal = null;

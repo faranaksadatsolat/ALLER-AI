@@ -1,5 +1,5 @@
 
-import { customRequiredFamilies } from "./engine.js";
+import { customRequiredFamilies } from "./engine.js?v=2.2.0";
 
 const DET_MODEL = "PP-OCRv5_mobile_det";
 

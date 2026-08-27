@@ -211,4 +211,32 @@ function fullStatus() {
   assert.equal(x.status, "conflict");
 }
 
-console.log("ALLER AI v2.1 deterministic safety tests: PASS");
+
+
+// 15) Real OCR corruption: 253 g must not become 8253 g when multipack evidence exists.
+{
+  const c = extractCaloriesFromText(
+    "영양정보 총 내용량 8253 g (5.8 g x 44봉지) 100 g당 485 kcal 나트륨 600 mg"
+  );
+  assert.equal(c.total_weight_g, 253);
+  assert.equal(c.package_kcal, 1227);
+}
+
+// 16) If an extreme OCR weight has no independent support, do not show absurd energy.
+{
+  const c = extractCaloriesFromText(
+    "영양정보 총 내용량 8253 g 100 g당 485 kcal 나트륨 600 mg"
+  );
+  assert.equal(c.package_kcal, null);
+}
+
+// 17) Original Korean label remains correct.
+{
+  const c = extractCaloriesFromText(
+    "영양정보 총 내용량 253 g (5.8 g x 44봉지) 100 g당 485 kcal"
+  );
+  assert.equal(c.total_weight_g, 253);
+  assert.equal(c.package_kcal, 1227);
+}
+
+console.log("ALLER AI v2.2 deterministic safety tests: PASS");

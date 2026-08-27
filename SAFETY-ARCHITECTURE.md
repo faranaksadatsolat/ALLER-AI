@@ -84,3 +84,21 @@ v2.1 reduces redundant browser inference without weakening negative-result safet
 - a strong orientation lock prevents every later family from testing four rotations;
 - a verified direct Conflict is terminal for that product;
 - negative results still require full mandatory-family coverage.
+
+
+## v2.2.0 deployment/version safety
+
+The UI displays the runtime version and module URLs carry a build query string.
+This prevents a stale GitHub Pages/browser module graph from silently mixing old and
+new safety logic.
+
+A v2.2.0 live test must show:
+- visible header version `v2.2.0`;
+- 7 mandatory base OCR families, never 9.
+
+## v2.2.0 calorie sanity
+
+Printed total package weight is cross-validated against independent multipack
+evidence when available. OCR-corrupted values that disagree sharply are rejected or,
+only when independently supported, recovered by a numeric suffix. Extreme unsupported
+computed calorie values are suppressed rather than shown to the consumer.

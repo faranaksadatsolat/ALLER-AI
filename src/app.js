@@ -4,17 +4,18 @@ import {
   extractProductCalories,
   REQUIRED_BASE_FAMILIES,
   customRequiredFamilies,
-} from "./engine.js";
-import { deepScan, requiredFamiliesForProfile } from "./ocr.js";
+} from "./engine.js?v=2.2.0";
+import { deepScan, requiredFamiliesForProfile } from "./ocr.js?v=2.2.0";
 import {
   dHash,
   findLearnedTexts,
   saveCorrection,
   exportLearningData,
   getLearningCount,
-} from "./learning.js";
+} from "./learning.js?v=2.2.0";
 
 const MAX_PRODUCTS = 6;
+const APP_VERSION = "2.2.0";
 const MAX_PHOTOS = 3;
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -28,6 +29,8 @@ const productResults = $("#productResults");
 const calTotal = $("#calTotal");
 const exportLearningBtn = $("#exportLearning");
 const learningCountEl = $("#learningCount");
+const versionEl = $("#versionBadge");
+if (versionEl) versionEl.textContent = `v${APP_VERSION}`;
 
 let custom = [];
 let products = [{ id: 1, photos: [] }];
